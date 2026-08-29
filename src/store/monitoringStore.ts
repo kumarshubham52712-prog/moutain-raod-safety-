@@ -85,6 +85,7 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
     scenario:  'A',
     speed:     1,
     tick:      0,
+    rainfallIntensity: envState.rainfallIntensity,
   };
 
   return {
@@ -163,7 +164,7 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
         alerts,
         eventLog:  [],
         envState:  getEnvState(),
-        simulation: { isRunning: false, scenario: 'A', speed: 1, tick: 0 },
+        simulation: { isRunning: false, scenario: 'A', speed: 1, tick: 0, rainfallIntensity: 15 },
         systemStatus: computeSystemStatus(sensors, substations, masterStation, alerts),
       });
     },

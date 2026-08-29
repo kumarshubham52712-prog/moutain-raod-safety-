@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout }           from './components/layout/Layout';
 import { lazy, Suspense }   from 'react';
 import { LoadingSpinner }   from './components/common';
+import { ErrorBoundary }    from './components/common/ErrorBoundary';
 
 // Lazy-load pages for code splitting
 const Overview          = lazy(() => import('./pages/Overview'));
@@ -29,17 +30,17 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/"               element={<Suspense fallback={<PageLoader />}><Overview /></Suspense>} />
-          <Route path="/dataflow"       element={<Suspense fallback={<PageLoader />}><DataFlow /></Suspense>} />
-          <Route path="/topology"       element={<Suspense fallback={<PageLoader />}><NetworkTopology /></Suspense>} />
-          <Route path="/map"            element={<Suspense fallback={<PageLoader />}><LiveMap /></Suspense>} />
-          <Route path="/analytics"      element={<Suspense fallback={<PageLoader />}><SensorAnalytics /></Suspense>} />
-          <Route path="/substations"    element={<Suspense fallback={<PageLoader />}><Substations /></Suspense>} />
-          <Route path="/master-stations" element={<Suspense fallback={<PageLoader />}><MasterStations /></Suspense>} />
-          <Route path="/danger-zones"   element={<Suspense fallback={<PageLoader />}><DangerZones /></Suspense>} />
-          <Route path="/alerts"         element={<Suspense fallback={<PageLoader />}><Alerts /></Suspense>} />
-          <Route path="/import"         element={<Suspense fallback={<PageLoader />}><DataImport /></Suspense>} />
-          <Route path="/simulation"     element={<Suspense fallback={<PageLoader />}><SimulationControl /></Suspense>} />
+          <Route path="/"               element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Overview /></Suspense></ErrorBoundary>} />
+          <Route path="/dataflow"       element={<ErrorBoundary><Suspense fallback={<PageLoader />}><DataFlow /></Suspense></ErrorBoundary>} />
+          <Route path="/topology"       element={<ErrorBoundary><Suspense fallback={<PageLoader />}><NetworkTopology /></Suspense></ErrorBoundary>} />
+          <Route path="/map"            element={<ErrorBoundary><Suspense fallback={<PageLoader />}><LiveMap /></Suspense></ErrorBoundary>} />
+          <Route path="/analytics"      element={<ErrorBoundary><Suspense fallback={<PageLoader />}><SensorAnalytics /></Suspense></ErrorBoundary>} />
+          <Route path="/substations"    element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Substations /></Suspense></ErrorBoundary>} />
+          <Route path="/master-stations" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><MasterStations /></Suspense></ErrorBoundary>} />
+          <Route path="/danger-zones"   element={<ErrorBoundary><Suspense fallback={<PageLoader />}><DangerZones /></Suspense></ErrorBoundary>} />
+          <Route path="/alerts"         element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Alerts /></Suspense></ErrorBoundary>} />
+          <Route path="/import"         element={<ErrorBoundary><Suspense fallback={<PageLoader />}><DataImport /></Suspense></ErrorBoundary>} />
+          <Route path="/simulation"     element={<ErrorBoundary><Suspense fallback={<PageLoader />}><SimulationControl /></Suspense></ErrorBoundary>} />
         </Route>
       </Routes>
     </BrowserRouter>
