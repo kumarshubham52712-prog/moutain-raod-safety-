@@ -45,7 +45,7 @@ const makeSubstation = (
 
 // Helper to generate sensor IDs for a substation (4 sensors each: IPI, VWP, GEO, EXT)
 function sensorIdsForSub(subNum: number): string[] {
-  const pad = (n: number) => String(n).padStart(3, '0');
+  const pad = (n: number) => String(n).padStart(2, '0');
   return [
     `IPI-${pad(subNum)}`,
     `VWP-${pad(subNum)}`,
