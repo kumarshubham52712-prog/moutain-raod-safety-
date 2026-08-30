@@ -33,6 +33,7 @@ interface MonitoringState {
   tick:             () => void;
 
   // Manual sensor controls
+  setSensorValue:       (sensorId: string, value: number) => void;
   setSensorTargetValue: (sensorId: string, targetValue: number) => void;
   setSensorBattery:     (sensorId: string, value: number) => void;
   setSensorSignal:      (sensorId: string, value: number) => void;
@@ -43,6 +44,9 @@ interface MonitoringState {
   // Alert management
   acknowledgeAlert: (id: string) => void;
   resolveAlert:     (id: string) => void;
+
+  // Data Import
+  applySensorImport: (sensors: Sensor[]) => void;
 }
 
 // ── Helpers ───────────────────────────────────────────────────
@@ -268,7 +272,7 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
       simInterval = setInterval(() => get().tick(), intervalMs);
       set({
         simulation: { ...state.simulation, isRunning: true, isDemoMode: true, scenario: 'CRITICAL_LANDSLIDE', scenarioTick: 0, speed: 1, startedAt: new Date().toISOString() },
-        eventLog: [{ id: genEventId(), timestamp: new Date().toISOString(), eventType: 'SIMULATION_EVENT', source: 'SYSTEM', message: 'DEMO MODE INITIATED: Critical Landslide Sequence', severity: 'WARNING' }, ...state.eventLog].slice(0, 300)
+        eventLog: [{ id: genEventId(), timestamp: new Date().toISOString(), eventType: 'SIMULATION_EVENT', source: 'SYSTEM', message: 'DEMO MODE INITIATED: Critical Landslide Sequence', severity: 'WARNING' } as EventLog, ...state.eventLog].slice(0, 300)
       });
     },
 
@@ -284,6 +288,8 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
     },
 
     // ── Manual Sensor Controls ────────────────────────────────
+    setSensorValue: (sensorId: string, value: number) => get().setSensorTargetValue(sensorId, value),
+
     setSensorTargetValue: (sensorId: string, targetValue: number) => {
       const state = get();
       const sensors = state.sensors.map(s => {
@@ -430,6 +436,10 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
     },
     resolveAlert: (id: string) => {
       set(state => ({ alerts: resolveAlert(state.alerts, id) }));
+    },
+
+    applySensorImport: (updatedSensors: Sensor[]) => {
+      set({ sensors: updatedSensors });
     },
   };
 });
