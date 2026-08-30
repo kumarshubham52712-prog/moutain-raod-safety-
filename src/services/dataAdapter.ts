@@ -10,13 +10,13 @@
  * 3. The rest of the app requires no changes.
  */
 
-import { INITIAL_SENSORS }          from '../data/mock/sensors';
-import { INITIAL_SUBSTATIONS }      from '../data/mock/substations';
-import { INITIAL_MASTER_STATION }   from '../data/mock/masterStation';
-import { INITIAL_DANGER_ZONES }     from '../data/mock/dangerZones';
-import { INITIAL_ALERTS }           from '../data/mock/alerts';
+import { INITIAL_SENSORS }           from '../data/mock/sensors';
+import { INITIAL_SUBSTATIONS }       from '../data/mock/substations';
+import { INITIAL_MASTER_STATIONS }   from '../data/mock/masterStation';
+import { INITIAL_DANGER_ZONES }      from '../data/mock/dangerZones';
+import { INITIAL_ALERTS }            from '../data/mock/alerts';
 import type { ImportedSensorRecord, Sensor, ImportResult } from '../types';
-import { SENSOR_TYPE_CONFIGS }      from '../config/sensorTypes';
+import { SENSOR_TYPE_CONFIGS }       from '../config/sensorTypes';
 
 export type DataSource = 'mock' | 'api' | 'websocket';
 
@@ -26,12 +26,20 @@ export const DATA_SOURCE: DataSource = 'mock';
 // export const API_BASE_URL = 'https://your-edge-server/api/v1';
 // export const WS_URL       = 'wss://your-edge-server/ws/live';
 
+function getSensorRiskLevel(value: number, cfg: typeof SENSOR_TYPE_CONFIGS['IPI']): Sensor['riskLevel'] {
+  if (value >= cfg.criticalThreshold)  return 'CRITICAL';
+  if (value >= cfg.highRiskThreshold)  return 'HIGH_RISK';
+  if (value >= cfg.warningThreshold)   return 'WARNING';
+  if (value >= cfg.normalMax * 0.8)    return 'WATCH';
+  return 'NORMAL';
+}
+
 export const dataAdapter = {
-  getSensors:       () => structuredClone(INITIAL_SENSORS),
-  getSubstations:   () => structuredClone(INITIAL_SUBSTATIONS),
-  getMasterStation: () => structuredClone(INITIAL_MASTER_STATION),
-  getDangerZones:   () => structuredClone(INITIAL_DANGER_ZONES),
-  getAlerts:        () => structuredClone(INITIAL_ALERTS),
+  getSensors:        () => structuredClone(INITIAL_SENSORS),
+  getSubstations:    () => structuredClone(INITIAL_SUBSTATIONS),
+  getMasterStations: () => structuredClone(INITIAL_MASTER_STATIONS),
+  getDangerZones:    () => structuredClone(INITIAL_DANGER_ZONES),
+  getAlerts:         () => structuredClone(INITIAL_ALERTS),
 
   // Validate and parse imported sensor records
   validateImport(records: unknown[]): ImportResult {
@@ -97,10 +105,7 @@ export const dataAdapter = {
           timestamp:    rec.timestamp,
           batteryLevel: rec.battery ?? updated[idx].batteryLevel,
           signalStrength: rec.signal ?? updated[idx].signalStrength,
-          riskLevel: rec.value >= cfg.criticalThreshold ? 'CRITICAL'
-            : rec.value >= cfg.warningThreshold ? 'HIGH_RISK'
-            : rec.value >= cfg.normalMax * 0.8  ? 'WATCH'
-            : 'NORMAL',
+          riskLevel: getSensorRiskLevel(rec.value, cfg),
           isAbnormal: rec.value > cfg.warningThreshold,
         };
       }

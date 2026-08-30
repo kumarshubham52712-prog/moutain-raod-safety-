@@ -1,217 +1,195 @@
+import { useState } from 'react';
 import { useMonitoringStore } from '../store/monitoringStore';
-import { Card, SectionHeader } from '../components/common';
-import { format }              from 'date-fns';
-import clsx                   from 'clsx';
-import { useRef, useEffect }   from 'react';
+import { Card, SectionHeader, StatusBadge } from '../components/common';
+import { Server, Wifi, Activity, Droplets, Radio, Ruler, ArrowRight, Activity as Pulse } from 'lucide-react';
+import { getRiskLevelConfig } from '../config/thresholds';
+import { getSensorTypeConfig } from '../config/sensorTypes';
+import clsx from 'clsx';
+import { Link } from 'react-router-dom';
 
-const EVENT_ICONS: Record<string, string> = {
-  SENSOR_READING:    '📡',
-  SENSOR_ALERT:      '🚨',
-  SUBSTATION_PACKET: '📦',
-  LORA_TRANSMISSION: '🔗',
-  MASTER_RECEIVE:    '🖥️',
-  EDGE_PROCESS:      '⚙️',
-  RISK_UPDATE:       '🧠',
-  ZONE_STATUS_CHANGE:'🗺️',
-  ALERT_GENERATED:   '🔔',
-  SIMULATION_EVENT:  '🎬',
+const SENSOR_ICONS: Record<string, React.ElementType> = {
+  IPI: Activity, VWP: Droplets, GEOPHONE: Radio, EXTENSOMETER: Ruler,
 };
-
-const SEV_COLORS: Record<string, string> = {
-  ERROR:   'border-l-red-500 bg-red-500/5',
-  WARNING: 'border-l-yellow-500 bg-yellow-500/5',
-  INFO:    'border-l-brand-600 bg-brand-600/5',
-};
-
-const PIPELINE_NODES = [
-  { id: 'sensor',   label: 'Sensors',          sub: '30 IoT nodes',           color: '#8b5cf6' },
-  { id: 'sub',      label: 'Substation / Edge', sub: '10 LoRa edge stations',  color: '#06b6d4' },
-  { id: 'lora',     label: 'LoRa Network',      sub: '868 MHz mesh',           color: '#f59e0b' },
-  { id: 'master',   label: 'Master Station',    sub: 'MASTER-01 Dehradun',     color: '#0ea5e9' },
-  { id: 'edge',     label: 'Edge Processing',   sub: 'Local AI gateway',       color: '#3b82f6' },
-  { id: 'ai',       label: 'AI / Risk Engine',  sub: 'Rule-based scoring',     color: '#a855f7' },
-  { id: 'score',    label: 'Risk Score',         sub: '0–100 composite',       color: '#f97316' },
-  { id: 'alert',    label: 'Danger Zone / Alert',sub: 'Response & evacuation', color: '#ef4444' },
-];
-
-function PipelineNode({ node, active }: { node: typeof PIPELINE_NODES[0]; active: boolean }) {
-  return (
-    <div className="flex flex-col items-center gap-1">
-      <div
-        className={clsx(
-          'w-16 h-16 rounded-xl border-2 flex items-center justify-center transition-all duration-500',
-          active ? 'scale-110' : 'opacity-60',
-        )}
-        style={{
-          borderColor:  node.color,
-          background:   `${node.color}15`,
-          boxShadow:    active ? `0 0 20px ${node.color}40` : 'none',
-        }}
-      >
-        <span className="text-xl">{EVENT_ICONS[node.id] ?? '●'}</span>
-      </div>
-      <p className="text-[10px] font-semibold text-center text-white w-20 leading-tight">{node.label}</p>
-      <p className="text-[9px] text-center text-slate-600 w-20 leading-tight">{node.sub}</p>
-    </div>
-  );
-}
-
-function FlowArrow({ color, animated }: { color: string; animated: boolean }) {
-  return (
-    <div className="flex flex-col items-center self-start mt-5 px-1">
-      <div className="relative w-8 h-1 rounded-full overflow-hidden" style={{ background: `${color}30` }}>
-        {animated && (
-          <div
-            className="absolute inset-y-0 w-4 rounded-full animate-flow"
-            style={{ background: color }}
-          />
-        )}
-      </div>
-      <span className="text-[8px] text-slate-600 mt-0.5" style={{ color }}>→</span>
-    </div>
-  );
-}
 
 export default function DataFlow() {
-  const { eventLog, masterStation, simulation } = useMonitoringStore();
-  const streamRef = useRef<HTMLDivElement>(null);
+  const { masterStations, substations, sensors } = useMonitoringStore();
 
-  useEffect(() => {
-    if (streamRef.current) {
-      streamRef.current.scrollTop = 0;
-    }
-  }, [eventLog.length]);
+  const [selectedMaster, setSelectedMaster] = useState(masterStations[0]?.id);
+  const [selectedSub, setSelectedSub] = useState<string | null>(null);
 
-  // Determine which pipeline nodes are "active" based on recent events
-  const recentTypes = new Set(eventLog.slice(0, 10).map(e => e.eventType));
-  const activeNodes = new Set<string>();
-  if (recentTypes.has('SENSOR_READING') || recentTypes.has('SENSOR_ALERT')) activeNodes.add('sensor');
-  if (recentTypes.has('SUBSTATION_PACKET')) { activeNodes.add('sub'); activeNodes.add('lora'); }
-  if (recentTypes.has('MASTER_RECEIVE') || recentTypes.has('SUBSTATION_PACKET')) activeNodes.add('master');
-  if (recentTypes.has('EDGE_PROCESS')) activeNodes.add('edge');
-  if (recentTypes.has('RISK_UPDATE')) { activeNodes.add('ai'); activeNodes.add('score'); }
-  if (recentTypes.has('ZONE_STATUS_CHANGE') || recentTypes.has('ALERT_GENERATED') || recentTypes.has('SENSOR_ALERT')) activeNodes.add('alert');
+  const master = masterStations.find(m => m.id === selectedMaster);
+  const masterSubs = substations.filter(s => s.masterStationId === selectedMaster);
+
+  // Auto-select first sub when master changes
+  if (selectedMaster && !selectedSub && masterSubs.length > 0) {
+    setSelectedSub(masterSubs[0].id);
+  }
+
+  const sub = substations.find(s => s.id === selectedSub);
+  const subSensors = sub ? sensors.filter(s => sub.sensorIds.includes(s.id)) : [];
 
   return (
     <div className="space-y-6">
-      {/* ── Pipeline Visualization ────────────────────────────── */}
-      <Card className="p-6">
-        <SectionHeader
-          title="Data Pipeline"
-          subtitle="End-to-end flow from sensor to alert"
-        />
-        <div className="overflow-x-auto">
-          <div className="flex items-start gap-0 min-w-max py-2">
-            {PIPELINE_NODES.map((node, i) => (
-              <div key={node.id} className="flex items-start">
-                <PipelineNode node={node} active={simulation.isRunning ? activeNodes.has(node.id) : true} />
-                {i < PIPELINE_NODES.length - 1 && (
-                  <FlowArrow color={node.color} animated={simulation.isRunning} />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+      <SectionHeader
+        title="System Architecture & Data Flow"
+        subtitle="SENSORS → SUBSTATION (LoRa) → MASTER STATION (Edge AI) → RISK ENGINE"
+      />
 
-        {/* Sub-topology: sensors → substations → master */}
-        <div className="mt-6 pt-4 border-t border-surface-700">
-          <p className="text-xs font-semibold text-slate-400 mb-3">Network Hierarchy Detail</p>
-          <div className="overflow-x-auto">
-            <div className="flex gap-4 min-w-max">
-              {['SUB-01', 'SUB-02', 'SUB-03', 'SUB-07'].map((subId, si) => {
-                const subSensorIds = {
-                  'SUB-01': ['IPI-001', 'VWP-001', 'GEO-001'],
-                  'SUB-02': ['IPI-002', 'VWP-002', 'EXT-001'],
-                  'SUB-03': ['IPI-003', 'VWP-003', 'GEO-002'],
-                  'SUB-07': ['GEO-004', 'VWP-007', 'EXT-004'],
-                }[subId] ?? [];
-
-                return (
-                  <div key={subId} className="flex flex-col items-center gap-2">
-                    {/* Sensors */}
-                    <div className="flex gap-2">
-                      {subSensorIds.map(sid => (
-                        <div key={sid}
-                          className="px-2 py-1 rounded text-[9px] font-mono bg-surface-700 border border-surface-600 text-slate-400 text-center"
-                          style={{ minWidth: 52 }}>
-                          {sid}
-                        </div>
-                      ))}
-                    </div>
-                    {/* Connector lines */}
-                    <div className="flex gap-2">
-                      {subSensorIds.map(sid => (
-                        <div key={sid} className="w-px h-4 bg-surface-600 mx-auto" style={{ width: 52, display:'flex', justifyContent:'center' }}>
-                          <div className="w-px h-full bg-slate-600" />
-                        </div>
-                      ))}
-                    </div>
-                    {/* Substation */}
-                    <div className="px-4 py-1.5 rounded-lg text-[10px] font-mono font-semibold border border-cyan-500/40 bg-cyan-500/10 text-cyan-400">
-                      {subId}
-                    </div>
-                    {/* LoRa arrow */}
-                    <div className="flex flex-col items-center text-slate-600">
-                      <div className="w-px h-3 bg-slate-600" />
-                      <span className="text-[9px]">LoRa</span>
-                    </div>
-                    {/* Master contribution indicator */}
-                    <div className="px-2 py-1 rounded text-[9px] font-mono border border-blue-500/30 bg-blue-500/10 text-blue-400">
-                      → M-01
-                    </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* ── 1. Master Stations ───────────────────────────────── */}
+        <Card className="p-4 flex flex-col h-[600px]">
+          <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+            <span className="w-6 h-6 rounded-full bg-brand-600/20 text-brand-400 flex items-center justify-center">1</span>
+            Master Stations
+          </h3>
+          <div className="space-y-3 overflow-y-auto pr-2 flex-1">
+            {masterStations.map(m => {
+              const rCfg = getRiskLevelConfig(m.riskLevel);
+              const isActive = m.id === selectedMaster;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => { setSelectedMaster(m.id); setSelectedSub(null); }}
+                  className={clsx(
+                    'w-full text-left p-4 rounded-xl border transition-all relative',
+                    isActive ? 'bg-surface-700/50 scale-[1.02] shadow-lg' : 'bg-surface-800 hover:bg-surface-700 opacity-60 hover:opacity-100',
+                  )}
+                  style={{ borderColor: isActive ? rCfg.color : 'rgba(255,255,255,0.1)' }}
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <Server size={20} style={{ color: rCfg.color }} />
+                    <span className="font-bold font-mono text-white text-base">{m.id}</span>
                   </div>
-                );
-              })}
-              <div className="flex items-center text-slate-600 text-xs px-2">
-                <span>... +6 more</span>
-              </div>
-            </div>
+                  <p className="text-xs text-slate-400 mb-2">{m.name}</p>
+                  <div className="flex justify-between text-[10px] text-slate-500">
+                    <span>{m.substationIds.length} Subs</span>
+                    <span>Risk: {m.aggregatedRiskScore}</span>
+                  </div>
+                  {isActive && (
+                    <div className="absolute top-1/2 -right-4 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-brand-400 z-10">
+                      <ArrowRight size={24} />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
-        </div>
-      </Card>
+        </Card>
 
-      {/* ── Live Event Stream ─────────────────────────────────── */}
-      <Card className="p-4">
-        <SectionHeader
-          title="Live Event Stream"
-          subtitle={`${eventLog.length} recent pipeline events`}
-        >
-          <span className="flex items-center gap-1.5 text-xs text-green-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-ping-slow" />
-            {simulation.isRunning ? 'Live' : 'Paused'}
-          </span>
-        </SectionHeader>
+        {/* ── 2. Substations ───────────────────────────────────── */}
+        <Card className="p-4 flex flex-col h-[600px] border-l-4 border-l-brand-500/50">
+          <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+            <span className="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center">2</span>
+            Substations (Edge Nodes)
+          </h3>
+          <div className="space-y-2 overflow-y-auto pr-2 flex-1">
+            {masterSubs.map(s => {
+              const rCfg = getRiskLevelConfig(s.riskLevel);
+              const isActive = s.id === selectedSub;
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => setSelectedSub(s.id)}
+                  className={clsx(
+                    'w-full text-left p-3 rounded-lg border transition-all relative',
+                    isActive ? 'bg-surface-700/50 scale-[1.02] shadow-lg' : 'bg-surface-800 hover:bg-surface-700 opacity-60 hover:opacity-100',
+                  )}
+                  style={{ borderColor: isActive ? rCfg.color : 'rgba(255,255,255,0.05)' }}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <Wifi size={14} style={{ color: rCfg.color }} />
+                      <span className="font-bold font-mono text-white text-sm">{s.id}</span>
+                    </div>
+                    <StatusBadge level={s.riskLevel} size="xs" showDot={false} />
+                  </div>
+                  <div className="flex justify-between text-[10px] text-slate-500">
+                    <span>{s.sensorIds.length} Sensors</span>
+                    <span>LoRa: {s.loraSignal}%</span>
+                  </div>
+                  {isActive && (
+                    <div className="absolute top-1/2 -right-4 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-cyan-400 z-10">
+                      <ArrowRight size={24} />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </Card>
 
-        <div ref={streamRef} className="space-y-1.5 max-h-96 overflow-y-auto font-mono text-xs pr-1">
-          {eventLog.length === 0 ? (
-            <p className="text-slate-600 text-center py-8">
-              Start the simulation to see live pipeline events.
-            </p>
-          ) : eventLog.map(evt => (
-            <div
-              key={evt.id}
-              className={clsx(
-                'border-l-2 px-3 py-2 rounded-r-lg transition-all',
-                SEV_COLORS[evt.severity] ?? SEV_COLORS.INFO,
-              )}
-            >
-              <div className="flex items-center gap-2 text-[10px] text-slate-500 mb-0.5">
-                <span>{format(new Date(evt.timestamp), 'HH:mm:ss.SSS')}</span>
-                <span className="text-slate-700">·</span>
-                <span className="font-semibold text-slate-400">{evt.source}</span>
-                {evt.destination && (
-                  <>
-                    <span className="text-slate-700">→</span>
-                    <span className="font-semibold text-brand-400">{evt.destination}</span>
-                  </>
-                )}
-                <span className="ml-auto px-1.5 py-0.5 rounded text-[9px] bg-surface-800 text-slate-500 border border-surface-700">
-                  {evt.eventType}
-                </span>
-              </div>
-              <p className="text-slate-300">{evt.message}</p>
-            </div>
-          ))}
+        {/* ── 3. Sensors ───────────────────────────────────────── */}
+        <Card className="p-4 flex flex-col h-[600px] border-l-4 border-l-purple-500/50">
+          <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+            <span className="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center">3</span>
+            Sensors
+          </h3>
+          <div className="space-y-3 overflow-y-auto pr-2 flex-1">
+            {subSensors.map(s => {
+              const sRisk = getRiskLevelConfig(s.riskLevel);
+              const tCfg = getSensorTypeConfig(s.type);
+              const IconComp = SENSOR_ICONS[s.type] || Pulse;
+              return (
+                <Link
+                  key={s.id}
+                  to={`/sensors/${s.id}`}
+                  className="block p-3 rounded-lg border bg-surface-900/50 hover:bg-surface-700 transition-colors"
+                  style={{ borderColor: sRisk.borderColor }}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <IconComp size={14} style={{ color: tCfg.color }} />
+                      <span className="font-bold font-mono text-white text-sm">{s.id}</span>
+                    </div>
+                    <StatusBadge level={s.riskLevel} size="xs" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-slate-500">{s.type}</span>
+                    <span className="font-mono font-bold" style={{ color: sRisk.color }}>
+                      {s.currentValue.toFixed(2)} <span className="text-[10px] text-slate-500 font-sans">{s.unit}</span>
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+            {subSensors.length === 0 && (
+              <p className="text-center text-slate-500 text-sm mt-10">Select a substation</p>
+            )}
+          </div>
+        </Card>
+      </div>
+
+      {/* Data flow diagram */}
+      <Card className="p-6">
+        <h3 className="text-sm font-bold text-white mb-6">Logical Architecture</h3>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center">
+          <div className="flex-1 w-full bg-surface-900 border border-surface-700 p-4 rounded-xl">
+            <Pulse size={24} className="text-purple-400 mx-auto mb-2" />
+            <p className="font-bold text-sm text-white">Sensors (120)</p>
+            <p className="text-[10px] text-slate-500">IPI, VWP, Geo, Ext</p>
+            <p className="text-[10px] text-slate-500 mt-2 font-mono">1 min polling</p>
+          </div>
+          <ArrowRight size={24} className="text-slate-600 rotate-90 md:rotate-0" />
+          <div className="flex-1 w-full bg-surface-900 border border-surface-700 p-4 rounded-xl">
+            <Wifi size={24} className="text-cyan-400 mx-auto mb-2" />
+            <p className="font-bold text-sm text-white">Substations (30)</p>
+            <p className="text-[10px] text-slate-500">Data Aggregation</p>
+            <p className="text-[10px] text-cyan-400 mt-2 font-mono bg-cyan-400/10 inline-block px-2 py-0.5 rounded">LoRa 868MHz</p>
+          </div>
+          <ArrowRight size={24} className="text-slate-600 rotate-90 md:rotate-0" />
+          <div className="flex-1 w-full bg-surface-900 border border-surface-700 p-4 rounded-xl border-t-4 border-t-brand-500">
+            <Server size={24} className="text-brand-400 mx-auto mb-2" />
+            <p className="font-bold text-sm text-white">Master Stations (3)</p>
+            <p className="text-[10px] text-slate-500">Edge Processing</p>
+            <p className="text-[10px] text-slate-500 mt-2 font-mono">Correlated Risk Engine</p>
+          </div>
+          <ArrowRight size={24} className="text-slate-600 rotate-90 md:rotate-0" />
+          <div className="flex-1 w-full bg-surface-900 border border-surface-700 p-4 rounded-xl">
+            <Radio size={24} className="text-red-400 mx-auto mb-2" />
+            <p className="font-bold text-sm text-white">Alerting System</p>
+            <p className="text-[10px] text-slate-500">Danger Zones</p>
+            <p className="text-[10px] text-slate-500 mt-2 font-mono">NDMA / SDRF</p>
+          </div>
         </div>
       </Card>
     </div>

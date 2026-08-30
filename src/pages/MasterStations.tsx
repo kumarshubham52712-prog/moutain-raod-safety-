@@ -1,132 +1,94 @@
-import { useMonitoringStore }  from '../store/monitoringStore';
+import { Link } from 'react-router-dom';
+import { useMonitoringStore } from '../store/monitoringStore';
 import { Card, SectionHeader, StatusBadge, CommBadge, MetricRow, ProgressBar } from '../components/common';
-import { RiskGauge }           from '../components/charts';
-import { getRiskLevelConfig }  from '../config/thresholds';
-import { format }              from 'date-fns';
-import { Server }              from 'lucide-react';
+import { RiskGauge } from '../components/charts';
+import { getRiskLevelConfig } from '../config/thresholds';
+import { format } from 'date-fns';
+import { Server, ChevronRight } from 'lucide-react';
 
 export default function MasterStations() {
-  const { masterStation, substations, sensors } = useMonitoringStore();
-  const rCfg = getRiskLevelConfig(masterStation.riskLevel);
+  const { masterStations, substations, sensors } = useMonitoringStore();
 
   return (
     <div className="space-y-6">
-      {/* ── Master Station Header ─────────────────────────────── */}
-      <Card className="p-6">
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div className="flex items-center gap-4">
-            <div
-              className="w-16 h-16 rounded-xl flex items-center justify-center border-2"
-              style={{ borderColor: rCfg.color, background: rCfg.bgColor }}
-            >
-              <Server size={28} style={{ color: rCfg.color }} />
-            </div>
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <h2 className="text-xl font-bold font-mono text-white">{masterStation.id}</h2>
-                <StatusBadge level={masterStation.riskLevel} />
-                <CommBadge status={masterStation.communicationStatus} />
-              </div>
-              <p className="text-sm text-slate-400">{masterStation.name}</p>
-              <p className="text-xs text-slate-600">{masterStation.location}</p>
-            </div>
-          </div>
-          <div className="ml-auto">
-            <RiskGauge score={masterStation.aggregatedRiskScore} size={100} />
-          </div>
-        </div>
-      </Card>
+      <SectionHeader
+        title="Master Stations"
+        subtitle={`${masterStations.length} command centers — Dehradun monitoring region`}
+      />
 
-      {/* ── KPI Row ───────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
-        {[
-          { label: 'Total Sensors',  value: masterStation.totalSensors },
-          { label: 'Online',         value: masterStation.onlineSensors },
-          { label: 'Offline',        value: masterStation.offlineSensors },
-          { label: 'Warnings',       value: masterStation.warningSensors },
-          { label: 'Critical',       value: masterStation.criticalSensors },
-          { label: 'Substations',    value: masterStation.substationIds.length },
-        ].map(kpi => (
-          <Card key={kpi.label} className="p-3 text-center">
-            <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">{kpi.label}</p>
-            <p className="text-xl font-bold font-mono text-white">{kpi.value}</p>
-          </Card>
-        ))}
+      <div className="grid grid-cols-1 gap-6">
+        {masterStations.map(master => {
+          const rCfg = getRiskLevelConfig(master.riskLevel);
+          const masterSubs = substations.filter(s => master.substationIds.includes(s.id));
+          const masterSensors = sensors.filter(s =>
+            masterSubs.some(sub => sub.sensorIds.includes(s.id))
+          );
+
+          return (
+            <Link key={master.id} to={`/master-stations/${master.id}`} className="group">
+              <Card className="p-6 hover:border-slate-500 transition-all hover:scale-[1.003]">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                  <div className="flex items-center gap-4">
+                    <div
+                      className="w-16 h-16 rounded-xl flex items-center justify-center border-2 shrink-0"
+                      style={{ borderColor: rCfg.color, background: rCfg.bgColor }}
+                    >
+                      <Server size={28} style={{ color: rCfg.color }} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-3 mb-1">
+                        <h2 className="text-lg font-bold font-mono text-white">{master.id}</h2>
+                        <StatusBadge level={master.riskLevel} />
+                        <CommBadge status={master.communicationStatus} />
+                      </div>
+                      <p className="text-sm text-slate-400">{master.name}</p>
+                      <p className="text-xs text-slate-600">{master.location}</p>
+                    </div>
+                  </div>
+
+                  <div className="ml-auto flex items-center gap-6">
+                    <div className="hidden md:block text-right">
+                      <div className="grid grid-cols-3 gap-x-6 gap-y-1">
+                        <MetricRow label="Sensors" value={masterSensors.length} />
+                        <MetricRow label="Substations" value={masterSubs.length} />
+                        <MetricRow label="Online" value={master.onlineSensors} highlight />
+                        <MetricRow label="Warnings" value={master.warningSensors} />
+                        <MetricRow label="Critical" value={master.criticalSensors} />
+                        <MetricRow label="LoRa" value={`${master.loraNetworkHealth}%`} />
+                      </div>
+                    </div>
+                    <RiskGauge score={master.aggregatedRiskScore} size={80} />
+                    <ChevronRight size={20} className="text-slate-600 group-hover:text-slate-400 transition-colors" />
+                  </div>
+                </div>
+
+                {/* Health bar */}
+                <div className="mt-4">
+                  <ProgressBar value={master.loraNetworkHealth} label="LoRa Network Health" color="#06b6d4" />
+                </div>
+
+                {/* Sub mini-status */}
+                <div className="flex gap-1.5 mt-3">
+                  {masterSubs.map(sub => {
+                    const sCfg = getRiskLevelConfig(sub.riskLevel);
+                    return (
+                      <div
+                        key={sub.id}
+                        className="flex-1 h-2 rounded-full transition-all"
+                        style={{ background: sCfg.color, opacity: sub.communicationStatus === 'OFFLINE' ? 0.2 : 0.8 }}
+                        title={`${sub.id}: ${sub.riskLevel} (Risk: ${sub.riskScore})`}
+                      />
+                    );
+                  })}
+                </div>
+                <p className="text-[10px] text-slate-600 mt-1">
+                  Substation status — each bar represents one substation's risk level
+                </p>
+              </Card>
+            </Link>
+          );
+        })}
       </div>
-
-      {/* ── Network Health ────────────────────────────────────── */}
-      <Card className="p-4">
-        <SectionHeader title="Network & Performance" subtitle="LoRa mesh network and data throughput" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-          <MetricRow label="LoRa Health"       value={masterStation.loraNetworkHealth}         unit="%" highlight />
-          <MetricRow label="Data Rate"         value={masterStation.dataRate}                  unit=" Mbps" />
-          <MetricRow label="Uptime"            value={masterStation.uptime}                   unit="%" highlight />
-          <MetricRow label="Last Sync"         value={format(new Date(masterStation.lastSync), 'HH:mm:ss')} />
-          <MetricRow label="Packets Processed" value={masterStation.packetsProcessed.toLocaleString()} highlight />
-          <MetricRow label="Packets Dropped"   value={masterStation.packetsDropped}           />
-          <MetricRow label="Packet Loss"       value={masterStation.packetsProcessed > 0
-            ? `${((masterStation.packetsDropped / masterStation.packetsProcessed) * 100).toFixed(3)}%`
-            : '0%'} />
-          <MetricRow label="Risk Score"        value={`${masterStation.aggregatedRiskScore}/100`} highlight />
-        </div>
-        <ProgressBar value={masterStation.loraNetworkHealth} label="LoRa Network Health" color="#06b6d4" />
-      </Card>
-
-      {/* ── Connected Substations ─────────────────────────────── */}
-      <Card className="p-4">
-        <SectionHeader
-          title="Connected Substations"
-          subtitle={`${substations.length} edge stations reporting to ${masterStation.id}`}
-        />
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-surface-700">
-                {['ID', 'Sensors', 'LoRa Signal', 'Battery', 'Power', 'Status', 'Risk', 'Packets', 'Lost', 'Last Sync'].map(h => (
-                  <th key={h} className="text-left py-2 px-2 text-slate-500 font-medium whitespace-nowrap">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {substations.map(sub => {
-                const sCfg = getRiskLevelConfig(sub.riskLevel);
-                return (
-                  <tr key={sub.id} className="border-b border-surface-800 hover:bg-surface-700/30 transition-colors">
-                    <td className="py-2.5 px-2 font-mono font-bold text-white">{sub.id}</td>
-                    <td className="py-2.5 px-2 text-slate-300">{sub.sensorIds.length}</td>
-                    <td className="py-2.5 px-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-12 h-1.5 bg-surface-700 rounded-full overflow-hidden">
-                          <div className="h-full rounded-full" style={{ width: `${sub.loraSignal}%`, background: '#06b6d4' }} />
-                        </div>
-                        <span className="font-mono text-slate-400">{sub.loraSignal}%</span>
-                      </div>
-                    </td>
-                    <td className="py-2.5 px-2 font-mono text-slate-400">{sub.batteryLevel.toFixed(0)}%</td>
-                    <td className="py-2.5 px-2">
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-surface-700 text-slate-400">
-                        {sub.powerStatus}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-2"><CommBadge status={sub.communicationStatus} /></td>
-                    <td className="py-2.5 px-2">
-                      <div className="flex items-center gap-2">
-                        <StatusBadge level={sub.riskLevel} size="xs" showDot={false} />
-                        <span className="font-mono text-[10px]" style={{ color: sCfg.color }}>{sub.riskScore}</span>
-                      </div>
-                    </td>
-                    <td className="py-2.5 px-2 font-mono text-slate-500">{sub.packetsReceived.toLocaleString()}</td>
-                    <td className="py-2.5 px-2 font-mono text-slate-600">{sub.packetsLost}</td>
-                    <td className="py-2.5 px-2 font-mono text-slate-600 whitespace-nowrap">
-                      {format(new Date(sub.lastSync), 'HH:mm:ss')}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </Card>
     </div>
   );
 }

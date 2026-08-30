@@ -1,8 +1,8 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard, Radio, Network, Map, BarChart2,
-  Server, Cpu, AlertTriangle, Bell, Upload, Play,
-  Mountain, Wifi, ChevronRight,
+  LayoutDashboard, Map, BarChart2,
+  Server, Cpu, AlertTriangle, Bell, Upload, Play, PlaySquare,
+  Mountain, Wifi, ChevronRight, Radio, Activity, Network,
 } from 'lucide-react';
 import { useMonitoringStore } from '../../store/monitoringStore';
 import { getRiskLevelConfig } from '../../config/thresholds';
@@ -22,6 +22,7 @@ const NavSection = ({ title, items }: { title: string; items: NavItem[] }) => (
       <NavLink
         key={item.path}
         to={item.path}
+        end={item.path === '/'}
         className={({ isActive }) => clsx(
           'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 group mb-0.5',
           isActive
@@ -46,16 +47,13 @@ export function Sidebar() {
   const riskCfg = getRiskLevelConfig(systemStatus.overallRiskLevel);
 
   const monitoringItems: NavItem[] = [
-    { path: '/',          label: 'Overview',         icon: <LayoutDashboard size={16} /> },
-    { path: '/dataflow',  label: 'Live Data Flow',   icon: <Radio size={16} /> },
-    { path: '/topology',  label: 'Network Topology', icon: <Network size={16} /> },
-    { path: '/map',       label: 'Live Map',         icon: <Map size={16} /> },
-    { path: '/analytics', label: 'Sensor Analytics', icon: <BarChart2 size={16} /> },
-  ];
-
-  const infrastructureItems: NavItem[] = [
-    { path: '/substations',    label: 'Substations',     icon: <Wifi size={16} /> },
-    { path: '/master-stations',label: 'Master Stations', icon: <Server size={16} /> },
+    { path: '/',              label: 'Overview',         icon: <LayoutDashboard size={16} /> },
+    { path: '/master-stations', label: 'Master Stations', icon: <Server size={16} /> },
+    { path: '/substations',   label: 'Substations',      icon: <Wifi size={16} /> },
+    { path: '/sensors',       label: 'Sensors',          icon: <Activity size={16} /> },
+    { path: '/map',           label: 'Live Map',         icon: <Map size={16} /> },
+    { path: '/dataflow',      label: 'Data Flow',        icon: <Radio size={16} /> },
+    { path: '/analytics',     label: 'Analytics',        icon: <BarChart2 size={16} /> },
   ];
 
   const riskItems: NavItem[] = [
@@ -66,8 +64,9 @@ export function Sidebar() {
   ];
 
   const toolItems: NavItem[] = [
-    { path: '/import',     label: 'Data Import',   icon: <Upload size={16} /> },
-    { path: '/simulation', label: 'Simulation',     icon: <Play size={16} /> },
+    { path: '/simulation', label: 'Live Simulation', icon: <PlaySquare size={16} /> },
+    { path: '/import',     label: 'Data Import',  icon: <Upload size={16} /> },
+    { path: '/topology',   label: 'Topology',     icon: <Network size={16} /> },
   ];
 
   return (
@@ -104,7 +103,6 @@ export function Sidebar() {
       {/* Nav */}
       <nav className="flex-1 px-2 py-3 overflow-y-auto">
         <NavSection title="Monitoring"      items={monitoringItems} />
-        <NavSection title="Infrastructure"  items={infrastructureItems} />
         <NavSection title="Risk & Alerts"   items={riskItems} />
         <NavSection title="Tools"           items={toolItems} />
       </nav>

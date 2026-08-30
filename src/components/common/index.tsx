@@ -122,9 +122,9 @@ export function SectionHeader({ title, subtitle, children }: { title: string; su
 
 // ── Card ──────────────────────────────────────────────────────
 
-export function Card({ children, className }: { children: ReactNode; className?: string }) {
+export function Card({ children, className, style }: { children: ReactNode; className?: string; style?: React.CSSProperties }) {
   return (
-    <div className={clsx('bg-surface-800 border border-surface-700 rounded-xl', className)}>
+    <div className={clsx('bg-surface-800 border border-surface-700 rounded-xl', className)} style={style}>
       {children}
     </div>
   );
@@ -189,3 +189,6 @@ export function ProgressBar({ value, max = 100, color = '#0ea5e9', label }: {
     </div>
   );
 }
+
+export * from './EventStream';
+export * from './PacketAnimator';

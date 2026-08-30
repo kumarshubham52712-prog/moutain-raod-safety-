@@ -90,7 +90,7 @@ export function generateZoneAlert(zone: DangerZone): Alert | null {
     message,
     timestamp:       new Date().toISOString(),
     dangerZoneId:    zone.id,
-    masterStationId: 'MASTER-01',
+    masterStationId: zone.masterStationId,
     location:        zone.name,
     acknowledged:    false,
     resolved:        false,

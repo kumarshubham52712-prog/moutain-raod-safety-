@@ -1,183 +1,181 @@
-import { useState }            from 'react';
-import { useMonitoringStore }  from '../store/monitoringStore';
-import { Card, SectionHeader, StatusBadge } from '../components/common';
-import { format }              from 'date-fns';
-import { Bell, Check, CheckCheck, Filter } from 'lucide-react';
-import clsx                    from 'clsx';
-
-type SeverityFilter = 'ALL' | 'CRITICAL' | 'HIGH_RISK' | 'WARNING' | 'INFO';
-type StatusFilter   = 'ALL' | 'UNACK' | 'ACK' | 'RESOLVED';
-
-const SEV_STYLES: Record<string, { bg: string; border: string; text: string; icon: string }> = {
-  CRITICAL:  { bg: 'bg-red-500/10',    border: 'border-l-red-500',    text: 'text-red-400',    icon: '🚨' },
-  HIGH_RISK: { bg: 'bg-orange-500/10', border: 'border-l-orange-500', text: 'text-orange-400', icon: '⚠️' },
-  WARNING:   { bg: 'bg-yellow-500/10', border: 'border-l-yellow-500', text: 'text-yellow-400', icon: '⚡' },
-  INFO:      { bg: 'bg-blue-500/10',   border: 'border-l-blue-500',   text: 'text-blue-400',   icon: 'ℹ️' },
-};
+import { useState } from 'react';
+import { useMonitoringStore } from '../store/monitoringStore';
+import { Card, SectionHeader } from '../components/common';
+import { format } from 'date-fns';
+import { AlertCircle, AlertTriangle, CheckCircle, Check, Trash2, Filter } from 'lucide-react';
+import clsx from 'clsx';
+import { Link } from 'react-router-dom';
+import type { Alert } from '../types';
 
 export default function Alerts() {
-  const { alerts, acknowledgeAlert, resolveAlert } = useMonitoringStore();
-  const [sevFilter, setSevFilter]       = useState<SeverityFilter>('ALL');
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
+  const { alerts, masterStations, acknowledgeAlert, resolveAlert } = useMonitoringStore();
 
-  let filtered = [...alerts];
-  if (sevFilter !== 'ALL')        filtered = filtered.filter(a => a.severity === sevFilter);
-  if (statusFilter === 'UNACK')   filtered = filtered.filter(a => !a.acknowledged && !a.resolved);
-  if (statusFilter === 'ACK')     filtered = filtered.filter(a => a.acknowledged && !a.resolved);
-  if (statusFilter === 'RESOLVED') filtered = filtered.filter(a => a.resolved);
+  const [filter, setFilter] = useState<'ALL' | 'ACTIVE' | 'RESOLVED'>('ACTIVE');
+  const [masterFilter, setMasterFilter] = useState<string>('ALL');
+  const [severityFilter, setSeverityFilter] = useState<'ALL' | 'CRITICAL' | 'WARNING' | 'HIGH_RISK'>('ALL');
 
-  filtered.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  const filteredAlerts = alerts.filter(a => {
+    if (filter === 'ACTIVE' && a.resolved) return false;
+    if (filter === 'RESOLVED' && !a.resolved) return false;
+    if (masterFilter !== 'ALL' && a.masterStationId !== masterFilter) return false;
+    if (severityFilter !== 'ALL' && a.severity !== severityFilter) return false;
+    return true;
+  });
 
-  const counts = {
-    total:    alerts.length,
-    unack:    alerts.filter(a => !a.acknowledged && !a.resolved).length,
-    ack:      alerts.filter(a => a.acknowledged && !a.resolved).length,
-    resolved: alerts.filter(a => a.resolved).length,
-    critical: alerts.filter(a => a.severity === 'CRITICAL' && !a.resolved).length,
+  const getAlertIcon = (severity: Alert['severity']) => {
+    switch (severity) {
+      case 'CRITICAL': return <AlertCircle size={24} className="text-red-500" />;
+      case 'HIGH_RISK': return <AlertTriangle size={24} className="text-orange-500" />;
+      case 'WARNING':  return <AlertTriangle size={24} className="text-yellow-500" />;
+      default:         return <AlertCircle size={24} className="text-blue-500" />;
+    }
+  };
+
+  const getAlertColor = (severity: Alert['severity']) => {
+    switch (severity) {
+      case 'CRITICAL': return 'border-red-500/50 bg-red-500/5';
+      case 'HIGH_RISK': return 'border-orange-500/50 bg-orange-500/5';
+      case 'WARNING':  return 'border-yellow-500/50 bg-yellow-500/5';
+      default:         return 'border-blue-500/50 bg-blue-500/5';
+    }
   };
 
   return (
-    <div className="space-y-4">
-      {/* ── Summary Row ────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        {[
-          { label: 'Total Alerts', value: counts.total, color: '#0ea5e9' },
-          { label: 'Unacknowledged', value: counts.unack, color: '#f97316' },
-          { label: 'Acknowledged', value: counts.ack, color: '#3b82f6' },
-          { label: 'Resolved', value: counts.resolved, color: '#22c55e' },
-          { label: 'Active Critical', value: counts.critical, color: '#ef4444' },
-        ].map(kpi => (
-          <Card key={kpi.label} className="p-3 text-center">
-            <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">{kpi.label}</p>
-            <p className="text-2xl font-bold font-mono" style={{ color: kpi.color }}>{kpi.value}</p>
-          </Card>
-        ))}
-      </div>
+    <div className="space-y-6 max-w-5xl mx-auto">
+      <SectionHeader
+        title="Alert Center"
+        subtitle={`${alerts.filter(a => !a.resolved).length} active alerts requiring attention`}
+      />
 
-      {/* ── Filters ────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-1.5 text-xs text-slate-500">
-          <Filter size={12} /> Severity:
-        </div>
-        {(['ALL', 'CRITICAL', 'HIGH_RISK', 'WARNING', 'INFO'] as SeverityFilter[]).map(sev => (
-          <button
-            key={sev}
-            onClick={() => setSevFilter(sev)}
-            className={clsx(
-              'px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all',
-              sevFilter === sev
-                ? 'bg-brand-600/20 border-brand-600/40 text-brand-400'
-                : 'border-surface-700 text-slate-500 hover:text-slate-300',
-            )}
-          >
-            {sev === 'ALL' ? 'All' : sev.replace('_', ' ')}
-          </button>
-        ))}
-
-        <div className="w-px h-5 bg-surface-700 mx-1" />
-
-        <div className="flex items-center gap-1.5 text-xs text-slate-500">
-          Status:
-        </div>
-        {(['ALL', 'UNACK', 'ACK', 'RESOLVED'] as StatusFilter[]).map(st => (
-          <button
-            key={st}
-            onClick={() => setStatusFilter(st)}
-            className={clsx(
-              'px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all',
-              statusFilter === st
-                ? 'bg-brand-600/20 border-brand-600/40 text-brand-400'
-                : 'border-surface-700 text-slate-500 hover:text-slate-300',
-            )}
-          >
-            {st === 'ALL' ? 'All' : st === 'UNACK' ? 'Unacknowledged' : st === 'ACK' ? 'Acknowledged' : 'Resolved'}
-          </button>
-        ))}
-      </div>
-
-      {/* ── Alert List ─────────────────────────────────────────── */}
+      {/* Filters */}
       <Card className="p-4">
-        <SectionHeader title="Alert History" subtitle={`${filtered.length} alerts matching filters`} />
+        <div className="flex flex-wrap items-center gap-3">
+          <Filter size={14} className="text-slate-500" />
+          
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value as typeof filter)}
+            className="px-3 py-2 rounded-lg bg-surface-700 border border-surface-600 text-sm text-white focus:outline-none"
+          >
+            <option value="ACTIVE">Active Only</option>
+            <option value="RESOLVED">Resolved Only</option>
+            <option value="ALL">All Alerts</option>
+          </select>
 
-        {filtered.length === 0 ? (
-          <div className="py-12 text-center">
-            <Bell size={32} className="mx-auto text-slate-700 mb-2" />
-            <p className="text-sm text-slate-600">No alerts match current filters</p>
-          </div>
-        ) : (
-          <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
-            {filtered.map(alert => {
-              const s = SEV_STYLES[alert.severity] ?? SEV_STYLES.INFO;
-              return (
-                <div
-                  key={alert.id}
-                  className={clsx(
-                    'border-l-4 rounded-r-lg px-4 py-3 transition-all',
-                    s.bg, s.border,
-                    alert.resolved && 'opacity-50',
-                  )}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className={clsx('text-xs font-bold', s.text)}>
-                          {s.icon} {alert.severity.replace('_', ' ')}
-                        </span>
-                        <span className="text-[10px] text-slate-600 font-mono">
-                          {format(new Date(alert.timestamp), 'dd MMM, HH:mm:ss')}
-                        </span>
-                        {alert.acknowledged && (
-                          <span className="text-[10px] text-blue-400 flex items-center gap-1">
-                            <Check size={10} /> ACK
-                          </span>
-                        )}
-                        {alert.resolved && (
-                          <span className="text-[10px] text-green-400 flex items-center gap-1">
-                            <CheckCheck size={10} /> RESOLVED
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm font-semibold text-white mb-0.5">{alert.title}</p>
-                      <p className="text-xs text-slate-400 mb-1.5">{alert.message}</p>
-                      <div className="flex items-center gap-3 text-[10px] text-slate-600 flex-wrap">
-                        {alert.sensorId && <span>Sensor: <span className="font-mono text-slate-400">{alert.sensorId}</span></span>}
-                        {alert.substationId && <span>Station: <span className="font-mono text-slate-400">{alert.substationId}</span></span>}
-                        {alert.dangerZoneId && <span>Zone: <span className="font-mono text-slate-400">{alert.dangerZoneId}</span></span>}
-                        <span>Location: <span className="text-slate-400">{alert.location}</span></span>
-                      </div>
-                      {alert.acknowledgedBy && (
-                        <p className="text-[10px] text-slate-600 mt-1">
-                          Acknowledged by {alert.acknowledgedBy} at {format(new Date(alert.acknowledgedAt!), 'HH:mm')}
-                        </p>
-                      )}
-                    </div>
+          <select
+            value={masterFilter}
+            onChange={(e) => setMasterFilter(e.target.value)}
+            className="px-3 py-2 rounded-lg bg-surface-700 border border-surface-600 text-sm text-white focus:outline-none"
+          >
+            <option value="ALL">All Master Stations</option>
+            {masterStations.map(m => <option key={m.id} value={m.id}>{m.id}</option>)}
+          </select>
 
-                    {/* Actions */}
-                    <div className="flex gap-2 shrink-0">
-                      {!alert.acknowledged && !alert.resolved && (
-                        <button
-                          onClick={() => acknowledgeAlert(alert.id)}
-                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition-all"
-                        >
-                          Acknowledge
-                        </button>
-                      )}
-                      {alert.acknowledged && !alert.resolved && (
-                        <button
-                          onClick={() => resolveAlert(alert.id)}
-                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20 transition-all"
-                        >
-                          Resolve
-                        </button>
-                      )}
-                    </div>
-                  </div>
+          <select
+            value={severityFilter}
+            onChange={(e) => setSeverityFilter(e.target.value as typeof severityFilter)}
+            className="px-3 py-2 rounded-lg bg-surface-700 border border-surface-600 text-sm text-white focus:outline-none"
+          >
+            <option value="ALL">All Severities</option>
+            <option value="CRITICAL">Critical</option>
+            <option value="HIGH_RISK">High Risk</option>
+            <option value="WARNING">Warning</option>
+          </select>
+
+          <span className="text-xs text-slate-500 ml-auto">
+            Showing {filteredAlerts.length} alerts
+          </span>
+        </div>
+      </Card>
+
+      {/* Alert List */}
+      <div className="space-y-4">
+        {filteredAlerts.map(alert => {
+          const isResolved = alert.resolved;
+          const isAcked = alert.acknowledged;
+
+          return (
+            <div
+              key={alert.id}
+              className={clsx(
+                'p-4 rounded-xl border transition-all flex flex-col md:flex-row gap-4 md:items-start relative overflow-hidden',
+                isResolved
+                  ? 'bg-surface-800/50 border-surface-700 opacity-60'
+                  : getAlertColor(alert.severity)
+              )}
+            >
+              {/* Critical pulse bar */}
+              {!isResolved && alert.severity === 'CRITICAL' && (
+                <div className="absolute top-0 left-0 w-1 h-full bg-red-500 animate-pulse" />
+              )}
+
+              <div className="shrink-0 mt-1">
+                {isResolved ? <CheckCircle size={24} className="text-green-500" /> : getAlertIcon(alert.severity)}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-4 mb-1">
+                  <h3 className={clsx('text-base font-bold', isResolved ? 'text-slate-400' : 'text-white')}>
+                    {alert.title}
+                  </h3>
+                  <span className="text-xs text-slate-500 whitespace-nowrap">
+                    {format(new Date(alert.timestamp), 'MMM dd, HH:mm:ss')}
+                  </span>
                 </div>
-              );
-            })}
+                
+                <p className="text-sm text-slate-400 mb-3">{alert.message}</p>
+                
+                <div className="flex flex-wrap items-center gap-4 text-xs">
+                  {alert.sensorId && (
+                    <span className="flex items-center gap-1 text-slate-500">
+                      Sensor: <Link to={`/sensors/${alert.sensorId}`} className="font-mono text-brand-400 hover:underline">{alert.sensorId}</Link>
+                    </span>
+                  )}
+                  {alert.dangerZoneId && (
+                    <span className="flex items-center gap-1 text-slate-500">
+                      Zone: <span className="font-mono text-red-400">{alert.dangerZoneId}</span>
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1 text-slate-500">
+                    Master: <Link to={`/master-stations/${alert.masterStationId}`} className="font-mono text-cyan-400 hover:underline">{alert.masterStationId}</Link>
+                  </span>
+                  <span className="flex items-center gap-1 text-slate-500">
+                    Location: <span className="font-medium text-slate-300">{alert.location}</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              {!isResolved && (
+                <div className="flex md:flex-col gap-2 shrink-0 md:w-32">
+                  {!isAcked && (
+                    <button
+                      onClick={() => acknowledgeAlert(alert.id)}
+                      className="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-surface-700 hover:bg-surface-600 text-white text-xs font-bold rounded-lg transition-colors border border-surface-600"
+                    >
+                      <Check size={14} /> Acknowledge
+                    </button>
+                  )}
+                  <button
+                    onClick={() => resolveAlert(alert.id)}
+                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 text-xs font-bold rounded-lg transition-colors border border-green-500/30"
+                  >
+                    <CheckCircle size={14} /> Resolve
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {filteredAlerts.length === 0 && (
+          <div className="text-center py-12 bg-surface-800 border border-surface-700 rounded-xl">
+            <CheckCircle size={48} className="mx-auto text-green-500 mb-4 opacity-50" />
+            <h3 className="text-lg font-bold text-slate-300 mb-1">All Clear</h3>
+            <p className="text-sm text-slate-500">No alerts match your current filters.</p>
           </div>
         )}
-      </Card>
+      </div>
     </div>
   );
 }

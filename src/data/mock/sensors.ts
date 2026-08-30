@@ -1,6 +1,6 @@
-import { Sensor, SensorReading } from '../../types';
+import { Sensor, SensorReading, SensorType } from '../../types';
 import { SENSOR_TYPE_CONFIGS } from '../../config/sensorTypes';
-import { SUBSTATION_POSITIONS } from '../../config/geography';
+import { SUBSTATION_POSITIONS, SUBSTATION_MASTER_MAP } from '../../config/geography';
 
 // ── Helper utilities ──────────────────────────────────────────
 
@@ -19,7 +19,7 @@ function generateHistory(
   const history: SensorReading[] = [];
   let v = baseValue;
   for (let i = points; i >= 0; i--) {
-    v = clamp(v + (Math.random() - 0.5) * variance, baseValue * 0.3, baseValue * 2.5);
+    v = clamp(v + (Math.random() - 0.5) * variance, Math.max(0, baseValue * 0.3), baseValue * 2.5);
     history.push({
       value: parseFloat(v.toFixed(3)),
       unit,
@@ -29,9 +29,17 @@ function generateHistory(
   return history;
 }
 
+function getSensorRiskLevel(value: number, cfg: typeof SENSOR_TYPE_CONFIGS['IPI']): Sensor['riskLevel'] {
+  if (value >= cfg.criticalThreshold) return 'CRITICAL';
+  if (value >= cfg.highRiskThreshold) return 'HIGH_RISK';
+  if (value >= cfg.warningThreshold)  return 'WARNING';
+  if (value >= cfg.normalMax * 0.8)   return 'WATCH';
+  return 'NORMAL';
+}
+
 function makeSensor(
   id: string,
-  type: 'IPI' | 'VWP' | 'GEOPHONE' | 'EXTENSOMETER',
+  type: SensorType,
   substationId: string,
   latOffset: number,
   lonOffset: number,
@@ -41,21 +49,19 @@ function makeSensor(
 ): Sensor {
   const cfg = SENSOR_TYPE_CONFIGS[type];
   const pos = SUBSTATION_POSITIONS[substationId];
+  if (!pos) {
+    throw new Error(`No position found for substation ${substationId}`);
+  }
+  const masterId = SUBSTATION_MASTER_MAP[substationId] ?? 'MASTER-01';
   const isAbnormal = initValue > cfg.warningThreshold;
-  const riskLevel = initValue >= cfg.criticalThreshold
-    ? 'CRITICAL'
-    : initValue >= cfg.warningThreshold
-      ? (initValue > cfg.warningThreshold * 0.7 ? 'HIGH_RISK' : 'WARNING')
-      : initValue > cfg.normalMax * 0.8
-        ? 'WATCH'
-        : 'NORMAL';
+  const riskLevel = getSensorRiskLevel(initValue, cfg);
 
   return {
     id,
     type,
     name: `${cfg.label} ${id}`,
     substationId,
-    masterStationId: 'MASTER-01',
+    masterStationId: masterId,
     latitude:  pos.lat + latOffset,
     longitude: pos.lon + lonOffset,
     currentValue: initValue,
@@ -68,6 +74,7 @@ function makeSensor(
     normalMin: cfg.normalMin,
     normalMax: cfg.normalMax,
     warningThreshold: cfg.warningThreshold,
+    highRiskThreshold: cfg.highRiskThreshold,
     criticalThreshold: cfg.criticalThreshold,
     riskLevel,
     isAbnormal,
@@ -80,62 +87,73 @@ function makeSensor(
   };
 }
 
-// ── 30 Sensors across 10 Substations ─────────────────────────
-// Distribution: ~3 sensors per substation
-// Types: 8 IPI, 8 VWP, 7 GEOPHONE, 7 EXTENSOMETER
+// ── Seed values for each substation ──────────────────────────
+// Each substation gets 4 sensors: IPI, VWP, GEOPHONE, EXTENSOMETER
+// Values are chosen to create interesting initial states
 
-export const INITIAL_SENSORS: Sensor[] = [
-  // ─── SUB-01 (Mussoorie Foothills West) ──────
-  makeSensor('IPI-001', 'IPI',         'SUB-01', 0.002, -0.001, 1.2,  92, 87),
-  makeSensor('VWP-001', 'VWP',         'SUB-01', 0.001,  0.002, 32.5, 88, 83),
-  makeSensor('GEO-001', 'GEOPHONE',    'SUB-01',-0.001,  0.001, 0.18, 95, 90),
+interface SeedSet {
+  ipi: { val: number; bat: number; sig: number };
+  vwp: { val: number; bat: number; sig: number };
+  geo: { val: number; bat: number; sig: number };
+  ext: { val: number; bat: number; sig: number };
+}
 
-  // ─── SUB-02 (Kempty Falls Ridge) ────────────
-  makeSensor('IPI-002', 'IPI',         'SUB-02', 0.002, -0.002, 1.8,  85, 79),
-  makeSensor('VWP-002', 'VWP',         'SUB-02',-0.001,  0.002, 41.0, 81, 75),
-  makeSensor('EXT-001', 'EXTENSOMETER','SUB-02', 0.001, -0.001, 1.9,  90, 84),
+const seeds: Record<number, SeedSet> = {
+  1:  { ipi: { val: 1.2, bat: 92, sig: 87 }, vwp: { val: 32.5, bat: 88, sig: 83 }, geo: { val: 0.18, bat: 95, sig: 90 }, ext: { val: 1.5, bat: 90, sig: 85 } },
+  2:  { ipi: { val: 1.8, bat: 85, sig: 79 }, vwp: { val: 41.0, bat: 81, sig: 75 }, geo: { val: 0.25, bat: 88, sig: 82 }, ext: { val: 1.9, bat: 90, sig: 84 } },
+  3:  { ipi: { val: 4.6, bat: 73, sig: 68 }, vwp: { val: 64.5, bat: 78, sig: 71 }, geo: { val: 0.95, bat: 82, sig: 77 }, ext: { val: 4.2, bat: 80, sig: 74 } },
+  4:  { ipi: { val: 6.8, bat: 68, sig: 63 }, vwp: { val: 88.0, bat: 71, sig: 66 }, geo: { val: 1.2, bat: 75, sig: 70 }, ext: { val: 9.2, bat: 65, sig: 60 } },
+  5:  { ipi: { val: 2.1, bat: 87, sig: 81 }, vwp: { val: 44.0, bat: 83, sig: 78 }, geo: { val: 0.32, bat: 91, sig: 86 }, ext: { val: 2.0, bat: 89, sig: 83 } },
+  6:  { ipi: { val: 1.5, bat: 93, sig: 88 }, vwp: { val: 28.0, bat: 89, sig: 85 }, geo: { val: 0.14, bat: 94, sig: 89 }, ext: { val: 2.4, bat: 86, sig: 82 } },
+  7:  { ipi: { val: 3.8, bat: 61, sig: 55 }, vwp: { val: 96.0, bat: 58, sig: 52 }, geo: { val: 1.78, bat: 63, sig: 57 }, ext: { val: 11.5, bat: 55, sig: 48 } },
+  8:  { ipi: { val: 3.2, bat: 76, sig: 70 }, vwp: { val: 52.0, bat: 78, sig: 73 }, geo: { val: 0.60, bat: 80, sig: 75 }, ext: { val: 4.1, bat: 78, sig: 72 } },
+  9:  { ipi: { val: 2.8, bat: 84, sig: 79 }, vwp: { val: 55.0, bat: 80, sig: 74 }, geo: { val: 0.72, bat: 88, sig: 83 }, ext: { val: 3.5, bat: 82, sig: 76 } },
+  10: { ipi: { val: 1.0, bat: 90, sig: 85 }, vwp: { val: 36.0, bat: 86, sig: 81 }, geo: { val: 0.28, bat: 92, sig: 87 }, ext: { val: 1.7, bat: 88, sig: 84 } },
+  // MASTER-02 substations
+  11: { ipi: { val: 1.6, bat: 89, sig: 84 }, vwp: { val: 38.0, bat: 85, sig: 80 }, geo: { val: 0.22, bat: 91, sig: 86 }, ext: { val: 2.1, bat: 87, sig: 82 } },
+  12: { ipi: { val: 3.5, bat: 78, sig: 72 }, vwp: { val: 58.0, bat: 76, sig: 70 }, geo: { val: 0.85, bat: 80, sig: 74 }, ext: { val: 5.2, bat: 74, sig: 68 } },
+  13: { ipi: { val: 4.2, bat: 72, sig: 66 }, vwp: { val: 68.0, bat: 74, sig: 68 }, geo: { val: 1.1, bat: 77, sig: 71 }, ext: { val: 6.8, bat: 70, sig: 64 } },
+  14: { ipi: { val: 1.1, bat: 91, sig: 86 }, vwp: { val: 30.0, bat: 87, sig: 82 }, geo: { val: 0.16, bat: 93, sig: 88 }, ext: { val: 1.8, bat: 89, sig: 84 } },
+  15: { ipi: { val: 2.5, bat: 82, sig: 76 }, vwp: { val: 48.0, bat: 80, sig: 74 }, geo: { val: 0.45, bat: 86, sig: 80 }, ext: { val: 3.0, bat: 83, sig: 78 } },
+  16: { ipi: { val: 3.8, bat: 74, sig: 68 }, vwp: { val: 62.0, bat: 72, sig: 66 }, geo: { val: 0.92, bat: 78, sig: 72 }, ext: { val: 5.5, bat: 71, sig: 65 } },
+  17: { ipi: { val: 0.8, bat: 94, sig: 89 }, vwp: { val: 25.0, bat: 92, sig: 87 }, geo: { val: 0.10, bat: 96, sig: 91 }, ext: { val: 1.2, bat: 93, sig: 88 } },
+  18: { ipi: { val: 2.8, bat: 80, sig: 74 }, vwp: { val: 52.0, bat: 78, sig: 72 }, geo: { val: 0.55, bat: 83, sig: 77 }, ext: { val: 3.8, bat: 79, sig: 73 } },
+  19: { ipi: { val: 1.9, bat: 86, sig: 80 }, vwp: { val: 42.0, bat: 84, sig: 78 }, geo: { val: 0.30, bat: 89, sig: 83 }, ext: { val: 2.3, bat: 85, sig: 80 } },
+  20: { ipi: { val: 1.0, bat: 92, sig: 87 }, vwp: { val: 28.0, bat: 90, sig: 85 }, geo: { val: 0.12, bat: 94, sig: 89 }, ext: { val: 1.4, bat: 91, sig: 86 } },
+  // MASTER-03 substations
+  21: { ipi: { val: 1.4, bat: 88, sig: 83 }, vwp: { val: 35.0, bat: 86, sig: 81 }, geo: { val: 0.20, bat: 90, sig: 85 }, ext: { val: 1.9, bat: 87, sig: 82 } },
+  22: { ipi: { val: 2.6, bat: 81, sig: 75 }, vwp: { val: 50.0, bat: 79, sig: 73 }, geo: { val: 0.52, bat: 84, sig: 78 }, ext: { val: 3.3, bat: 80, sig: 74 } },
+  23: { ipi: { val: 4.0, bat: 70, sig: 64 }, vwp: { val: 66.0, bat: 73, sig: 67 }, geo: { val: 1.0, bat: 76, sig: 70 }, ext: { val: 6.5, bat: 69, sig: 63 } },
+  24: { ipi: { val: 1.2, bat: 90, sig: 85 }, vwp: { val: 32.0, bat: 88, sig: 83 }, geo: { val: 0.17, bat: 92, sig: 87 }, ext: { val: 1.6, bat: 89, sig: 84 } },
+  25: { ipi: { val: 3.3, bat: 76, sig: 70 }, vwp: { val: 56.0, bat: 75, sig: 69 }, geo: { val: 0.78, bat: 79, sig: 73 }, ext: { val: 4.8, bat: 73, sig: 67 } },
+  26: { ipi: { val: 1.8, bat: 85, sig: 79 }, vwp: { val: 40.0, bat: 83, sig: 77 }, geo: { val: 0.28, bat: 88, sig: 82 }, ext: { val: 2.5, bat: 84, sig: 78 } },
+  27: { ipi: { val: 2.2, bat: 83, sig: 77 }, vwp: { val: 46.0, bat: 81, sig: 75 }, geo: { val: 0.40, bat: 86, sig: 80 }, ext: { val: 2.8, bat: 82, sig: 76 } },
+  28: { ipi: { val: 0.9, bat: 93, sig: 88 }, vwp: { val: 22.0, bat: 91, sig: 86 }, geo: { val: 0.08, bat: 95, sig: 90 }, ext: { val: 1.1, bat: 92, sig: 87 } },
+  29: { ipi: { val: 3.6, bat: 75, sig: 69 }, vwp: { val: 60.0, bat: 77, sig: 71 }, geo: { val: 0.88, bat: 79, sig: 73 }, ext: { val: 5.0, bat: 74, sig: 68 } },
+  30: { ipi: { val: 0.6, bat: 95, sig: 90 }, vwp: { val: 18.0, bat: 93, sig: 88 }, geo: { val: 0.05, bat: 97, sig: 92 }, ext: { val: 0.8, bat: 94, sig: 89 } },
+};
 
-  // ─── SUB-03 (Cloud End Escarpment) ──────────
-  makeSensor('IPI-003', 'IPI',         'SUB-03', 0.003,  0.002, 4.6,  73, 68),
-  makeSensor('VWP-003', 'VWP',         'SUB-03',-0.002, -0.001, 64.5, 78, 71),
-  makeSensor('GEO-002', 'GEOPHONE',    'SUB-03', 0.001,  0.003, 0.95, 82, 77),
+// ── Generate all 120 sensors ────────────────────────────────
+const pad = (n: number) => String(n).padStart(2, '0');
 
-  // ─── SUB-04 (Lal Tibba Slope) ───────────────
-  makeSensor('IPI-004', 'IPI',         'SUB-04', 0.002,  0.001, 6.8,  68, 63),
-  makeSensor('VWP-004', 'VWP',         'SUB-04',-0.001, -0.002, 88.0, 71, 66),
-  makeSensor('EXT-002', 'EXTENSOMETER','SUB-04', 0.003, -0.001, 9.2,  65, 60),
+function buildSensors(): Sensor[] {
+  const allSensors: Sensor[] = [];
 
-  // ─── SUB-05 (Rajpur Road Cut) ───────────────
-  makeSensor('IPI-005', 'IPI',         'SUB-05',-0.002,  0.002, 2.1,  87, 81),
-  makeSensor('VWP-005', 'VWP',         'SUB-05', 0.001, -0.001, 44.0, 83, 78),
-  makeSensor('GEO-003', 'GEOPHONE',    'SUB-05',-0.001,  0.001, 0.32, 91, 86),
+  for (let subNum = 1; subNum <= 30; subNum++) {
+    const subId = `SUB-${pad(subNum)}`;
+    const seed = seeds[subNum];
+    if (!seed) continue;
 
-  // ─── SUB-06 (Sahasradhara Valley) ───────────
-  makeSensor('IPI-006', 'IPI',         'SUB-06', 0.001,  0.002, 1.5,  93, 88),
-  makeSensor('VWP-006', 'VWP',         'SUB-06',-0.002,  0.001, 28.0, 89, 85),
-  makeSensor('EXT-003', 'EXTENSOMETER','SUB-06', 0.002, -0.002, 2.4,  86, 82),
+    allSensors.push(makeSensor(`IPI-${pad(subNum)}`, 'IPI',          subId,  0.002, -0.001, seed.ipi.val, seed.ipi.bat, seed.ipi.sig));
+    allSensors.push(makeSensor(`VWP-${pad(subNum)}`, 'VWP',          subId, -0.001,  0.002, seed.vwp.val, seed.vwp.bat, seed.vwp.sig));
+    allSensors.push(makeSensor(`GEO-${pad(subNum)}`, 'GEOPHONE',     subId,  0.001,  0.001, seed.geo.val, seed.geo.bat, seed.geo.sig));
+    allSensors.push(makeSensor(`EXT-${pad(subNum)}`, 'EXTENSOMETER', subId, -0.002, -0.001, seed.ext.val, seed.ext.bat, seed.ext.sig));
+  }
 
-  // ─── SUB-07 (Rispana River Bank) ────────────
-  makeSensor('GEO-004', 'GEOPHONE',    'SUB-07',-0.001, -0.001, 1.78, 61, 55),
-  makeSensor('VWP-007', 'VWP',         'SUB-07', 0.002,  0.002, 96.0, 58, 52),
-  makeSensor('EXT-004', 'EXTENSOMETER','SUB-07',-0.002,  0.001, 11.5, 55, 48),
+  return allSensors;
+}
 
-  // ─── SUB-08 (Dhalipur Slope) ────────────────
-  makeSensor('IPI-007', 'IPI',         'SUB-08', 0.001, -0.001, 3.2,  76, 70),
-  makeSensor('GEO-005', 'GEOPHONE',    'SUB-08',-0.001,  0.002, 0.60, 80, 75),
-  makeSensor('EXT-005', 'EXTENSOMETER','SUB-08', 0.002,  0.001, 4.1,  78, 72),
-
-  // ─── SUB-09 (Doiwala Embankment) ────────────
-  makeSensor('IPI-008', 'IPI',         'SUB-09',-0.002,  0.001, 2.8,  84, 79),
-  makeSensor('VWP-008', 'VWP',         'SUB-09', 0.001,  0.002, 55.0, 80, 74),
-  makeSensor('GEO-006', 'GEOPHONE',    'SUB-09',-0.001, -0.002, 0.72, 88, 83),
-
-  // ─── SUB-10 (Lachhiwala Bluff) ──────────────
-  makeSensor('GEO-007', 'GEOPHONE',    'SUB-10', 0.002,  0.001, 0.28, 90, 85),
-  makeSensor('VWP-009', 'VWP',         'SUB-10',-0.001, -0.001, 36.0, 86, 81),
-  makeSensor('EXT-006', 'EXTENSOMETER','SUB-10', 0.001,  0.002, 1.7,  92, 87),
-  makeSensor('EXT-007', 'EXTENSOMETER','SUB-10',-0.002,  0.001, 2.2,  88, 84),
-];
+export const INITIAL_SENSORS: Sensor[] = buildSensors();
 
 export const getSensorById = (id: string): Sensor | undefined =>
   INITIAL_SENSORS.find(s => s.id === id);

@@ -5,17 +5,21 @@ import { LoadingSpinner }   from './components/common';
 import { ErrorBoundary }    from './components/common/ErrorBoundary';
 
 // Lazy-load pages for code splitting
-const Overview          = lazy(() => import('./pages/Overview'));
-const DataFlow          = lazy(() => import('./pages/DataFlow'));
-const NetworkTopology   = lazy(() => import('./pages/NetworkTopology'));
-const LiveMap           = lazy(() => import('./pages/LiveMap'));
-const SensorAnalytics   = lazy(() => import('./pages/SensorAnalytics'));
-const Substations       = lazy(() => import('./pages/Substations'));
-const MasterStations    = lazy(() => import('./pages/MasterStations'));
-const DangerZones       = lazy(() => import('./pages/DangerZones'));
-const Alerts            = lazy(() => import('./pages/Alerts'));
-const DataImport        = lazy(() => import('./pages/DataImport'));
-const SimulationControl = lazy(() => import('./pages/SimulationControl'));
+const Overview              = lazy(() => import('./pages/Overview'));
+const DataFlow              = lazy(() => import('./pages/DataFlow'));
+const NetworkTopology       = lazy(() => import('./pages/NetworkTopology'));
+const LiveMap               = lazy(() => import('./pages/LiveMap'));
+const SensorAnalytics       = lazy(() => import('./pages/SensorAnalytics'));
+const Substations           = lazy(() => import('./pages/Substations'));
+const SubstationDetail      = lazy(() => import('./pages/SubstationDetail'));
+const MasterStations        = lazy(() => import('./pages/MasterStations'));
+const MasterStationDetail   = lazy(() => import('./pages/MasterStationDetail'));
+const SensorsListPage       = lazy(() => import('./pages/SensorsListPage'));
+const SensorDetail          = lazy(() => import('./pages/SensorDetail'));
+const DangerZones           = lazy(() => import('./pages/DangerZones'));
+const Alerts                = lazy(() => import('./pages/Alerts'));
+const DataImport            = lazy(() => import('./pages/DataImport'));
+const LiveSimulation      = lazy(() => import('./pages/LiveSimulation'));
 
 function PageLoader() {
   return (
@@ -25,22 +29,36 @@ function PageLoader() {
   );
 }
 
+function P({ children }: { children: React.ReactNode }) {
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<PageLoader />}>
+        {children}
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
-          <Route path="/"               element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Overview /></Suspense></ErrorBoundary>} />
-          <Route path="/dataflow"       element={<ErrorBoundary><Suspense fallback={<PageLoader />}><DataFlow /></Suspense></ErrorBoundary>} />
-          <Route path="/topology"       element={<ErrorBoundary><Suspense fallback={<PageLoader />}><NetworkTopology /></Suspense></ErrorBoundary>} />
-          <Route path="/map"            element={<ErrorBoundary><Suspense fallback={<PageLoader />}><LiveMap /></Suspense></ErrorBoundary>} />
-          <Route path="/analytics"      element={<ErrorBoundary><Suspense fallback={<PageLoader />}><SensorAnalytics /></Suspense></ErrorBoundary>} />
-          <Route path="/substations"    element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Substations /></Suspense></ErrorBoundary>} />
-          <Route path="/master-stations" element={<ErrorBoundary><Suspense fallback={<PageLoader />}><MasterStations /></Suspense></ErrorBoundary>} />
-          <Route path="/danger-zones"   element={<ErrorBoundary><Suspense fallback={<PageLoader />}><DangerZones /></Suspense></ErrorBoundary>} />
-          <Route path="/alerts"         element={<ErrorBoundary><Suspense fallback={<PageLoader />}><Alerts /></Suspense></ErrorBoundary>} />
-          <Route path="/import"         element={<ErrorBoundary><Suspense fallback={<PageLoader />}><DataImport /></Suspense></ErrorBoundary>} />
-          <Route path="/simulation"     element={<ErrorBoundary><Suspense fallback={<PageLoader />}><SimulationControl /></Suspense></ErrorBoundary>} />
+          <Route path="/"                      element={<P><Overview /></P>} />
+          <Route path="/master-stations"       element={<P><MasterStations /></P>} />
+          <Route path="/master-stations/:id"   element={<P><MasterStationDetail /></P>} />
+          <Route path="/substations"           element={<P><Substations /></P>} />
+          <Route path="/substations/:id"       element={<P><SubstationDetail /></P>} />
+          <Route path="/sensors"               element={<P><SensorsListPage /></P>} />
+          <Route path="/sensors/:id"           element={<P><SensorDetail /></P>} />
+          <Route path="/map"                   element={<P><LiveMap /></P>} />
+          <Route path="/dataflow"              element={<P><DataFlow /></P>} />
+          <Route path="/analytics"             element={<P><SensorAnalytics /></P>} />
+          <Route path="/topology"              element={<P><NetworkTopology /></P>} />
+          <Route path="/danger-zones"          element={<P><DangerZones /></P>} />
+          <Route path="/alerts"                element={<P><Alerts /></P>} />
+          <Route path="/import"                element={<P><DataImport /></P>} />
+          <Route path="/simulation"            element={<P><LiveSimulation /></P>} />
         </Route>
       </Routes>
     </BrowserRouter>

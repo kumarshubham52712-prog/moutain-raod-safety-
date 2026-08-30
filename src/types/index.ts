@@ -15,7 +15,7 @@ export type HealthStatus = 'HEALTHY' | 'DEGRADED' | 'FAULTY' | 'MAINTENANCE';
 
 export type AlertSeverity = 'INFO' | 'WARNING' | 'HIGH_RISK' | 'CRITICAL';
 
-export type SimulationScenario = 'A' | 'B' | 'C' | 'D' | 'E';
+export type SimulationScenario = 'NORMAL' | 'HEAVY_RAINFALL' | 'PORE_PRESSURE' | 'SLOPE_MOVEMENT' | 'MICRO_SEISMIC' | 'SURFACE_DEFORMATION' | 'MULTI_SENSOR' | 'CRITICAL_LANDSLIDE';
 
 // ── Core Sensor Data ─────────────────────────────────────────
 
@@ -41,6 +41,7 @@ export interface Sensor {
 
   // Current state
   currentValue: number;
+  targetValue?: number; // For smooth simulation interpolation
   unit: string;
   timestamp: string;
 
@@ -50,10 +51,11 @@ export interface Sensor {
   communicationStatus: CommunicationStatus;
   healthStatus: HealthStatus;
 
-  // Thresholds
+  // Thresholds (5-level)
   normalMin: number;
   normalMax: number;
   warningThreshold: number;
+  highRiskThreshold: number;
   criticalThreshold: number;
 
   // Computed
@@ -122,6 +124,7 @@ export interface MasterStation {
 
   // Communication
   communicationStatus: CommunicationStatus;
+  edgeConnectionStatus: CommunicationStatus;
   lastSync: string;
   dataRate: number;                   // Mbps to cloud
   uptime: number;                     // percentage
@@ -142,6 +145,7 @@ export interface DangerZone {
   id: string;                         // e.g. "DZ-01"
   name: string;
   description: string;
+  masterStationId: string;
   latitude: number;
   longitude: number;
   radius: number;                     // meters
@@ -224,7 +228,9 @@ export type EventType =
   | 'RISK_UPDATE'
   | 'ZONE_STATUS_CHANGE'
   | 'ALERT_GENERATED'
-  | 'SIMULATION_EVENT';
+  | 'SIMULATION_EVENT'
+  | 'MANUAL_OVERRIDE'
+  | 'CONNECTIVITY_CHANGE';
 
 export interface EventLog {
   id: string;
@@ -233,7 +239,7 @@ export interface EventLog {
   source: string;           // e.g. "IPI-004", "SUB-02", "MASTER-01"
   destination?: string;
   message: string;
-  severity: 'INFO' | 'WARNING' | 'ERROR';
+  severity: 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL';
   metadata?: Record<string, unknown>;
 }
 
@@ -258,6 +264,7 @@ export interface SystemStatus {
   totalSubstations: number;
   onlineSubstations: number;
   totalMasterStations: number;
+  onlineMasterStations: number;
   activeWarnings: number;
   criticalAlerts: number;
   overallRiskLevel: RiskLevel;
@@ -299,6 +306,7 @@ export interface SensorTypeConfig {
   normalMin: number;
   normalMax: number;
   warningThreshold: number;
+  highRiskThreshold: number;
   criticalThreshold: number;
   color: string;
   icon: string;
