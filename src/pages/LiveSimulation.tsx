@@ -86,29 +86,6 @@ export default function LiveSimulation() {
             </div>
           </div>
         </div>
-
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col items-end mr-4">
-            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Scenario</span>
-            <select
-              value={simulation.scenario}
-              onChange={(e) => setScenario(e.target.value as SimulationScenario)}
-              className="bg-surface-900 border border-surface-600 text-xs text-white rounded px-2 py-1 focus:outline-none"
-            >
-              {Object.entries(SCENARIO_SEQUENCES).map(([key, seq]) => (
-                <option key={key} value={key}>{seq.name}</option>
-              ))}
-            </select>
-          </div>
-          
-          <button
-            onClick={startDemoMode}
-            className="flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-brand-600 to-cyan-600 hover:from-brand-500 hover:to-cyan-500 text-white font-black text-sm rounded-lg border border-cyan-400/30 shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all"
-          >
-            <Zap size={16} className={simulation.isDemoMode ? 'animate-pulse' : ''} />
-            {simulation.isDemoMode ? 'DEMO RUNNING' : 'START DEMO'}
-          </button>
-        </div>
       </Card>
 
       {/* ── MAIN WORKSPACE ────────────────────────────────────── */}

@@ -100,7 +100,7 @@ export const INITIAL_ALERTS: Alert[] = [
   {
     id: genId(),
     severity: 'INFO',
-    title: 'LoRa Signal Degraded — SUB-07',
+    title: 'Signal Degraded — SUB-07',
     message: 'LoRa signal strength at SUB-07 has dropped to 52%. Data packets still being received but with increased latency. Check antenna condition.',
     timestamp: ago(180 * 60),
     substationId: 'SUB-07',

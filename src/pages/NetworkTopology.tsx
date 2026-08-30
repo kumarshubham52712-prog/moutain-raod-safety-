@@ -219,7 +219,7 @@ export default function NetworkTopology() {
                     ['Substation ID',    <Link to={`/substations/${selectedSubstation.id}`} className="text-brand-400 hover:underline">{selectedSubstation.id}</Link>],
                     ['Master Station',   <Link to={`/master-stations/${selectedSubstation.masterStationId}`} className="text-brand-400 hover:underline">{selectedSubstation.masterStationId}</Link>],
                     ['Connected Sensors', selectedSubstation.sensorIds.length],
-                    ['LoRa Signal',      `${selectedSubstation.loraSignal}%`],
+                    ['Signal',      `${selectedSubstation.loraSignal}%`],
                     ['LoRa Frequency',   selectedSubstation.loraFrequency],
                     ['Battery',          `${selectedSubstation.batteryLevel.toFixed(1)}%`],
                     ['Power Status',     selectedSubstation.powerStatus],

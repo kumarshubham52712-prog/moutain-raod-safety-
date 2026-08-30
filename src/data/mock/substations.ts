@@ -55,8 +55,7 @@ function sensorIdsForSub(subNum: number): string[] {
 }
 
 export const INITIAL_SUBSTATIONS: Substation[] = [
-  // ── MASTER-01 (SUB-01 to SUB-10) ──────────────────────────
-  makeSubstation('SUB-01', sensorIdsForSub(1),  87, 92, 18420, 22),
+  // ── MASTER-01 (SUB-02 to SUB-10) ── MASTER-01 itself handles local monitoring ──
   makeSubstation('SUB-02', sensorIdsForSub(2),  79, 85, 17350, 31),
   makeSubstation('SUB-03', sensorIdsForSub(3),  71, 78, 15800, 58),
   makeSubstation('SUB-04', sensorIdsForSub(4),  63, 68, 14200, 73),
@@ -67,8 +66,7 @@ export const INITIAL_SUBSTATIONS: Substation[] = [
   makeSubstation('SUB-09', sensorIdsForSub(9),  79, 84, 16800, 38),
   makeSubstation('SUB-10', sensorIdsForSub(10), 85, 90, 17900, 20),
 
-  // ── MASTER-02 (SUB-11 to SUB-20) ──────────────────────────
-  makeSubstation('SUB-11', sensorIdsForSub(11), 82, 89, 16200, 28),
+  // ── MASTER-02 (SUB-12 to SUB-20) ── MASTER-02 itself handles local monitoring ──
   makeSubstation('SUB-12', sensorIdsForSub(12), 75, 80, 15100, 42),
   makeSubstation('SUB-13', sensorIdsForSub(13), 68, 73, 14500, 55),
   makeSubstation('SUB-14', sensorIdsForSub(14), 84, 91, 17800, 20),
@@ -79,8 +77,7 @@ export const INITIAL_SUBSTATIONS: Substation[] = [
   makeSubstation('SUB-19', sensorIdsForSub(19), 80, 86, 16700, 32),
   makeSubstation('SUB-20', sensorIdsForSub(20), 88, 92, 17400, 18),
 
-  // ── MASTER-03 (SUB-21 to SUB-30) ──────────────────────────
-  makeSubstation('SUB-21', sensorIdsForSub(21), 83, 90, 16300, 24),
+  // ── MASTER-03 (SUB-22 to SUB-30) ── MASTER-03 itself handles local monitoring ──
   makeSubstation('SUB-22', sensorIdsForSub(22), 76, 81, 15600, 38),
   makeSubstation('SUB-23', sensorIdsForSub(23), 69, 74, 14400, 52),
   makeSubstation('SUB-24', sensorIdsForSub(24), 85, 88, 17200, 22),

@@ -53,7 +53,6 @@ export function Sidebar() {
     { path: '/sensors',       label: 'Sensors',          icon: <Activity size={16} /> },
     { path: '/map',           label: 'Live Map',         icon: <Map size={16} /> },
     { path: '/dataflow',      label: 'Data Flow',        icon: <Radio size={16} /> },
-    { path: '/analytics',     label: 'Analytics',        icon: <BarChart2 size={16} /> },
   ];
 
   const riskItems: NavItem[] = [
@@ -64,9 +63,7 @@ export function Sidebar() {
   ];
 
   const toolItems: NavItem[] = [
-    { path: '/simulation', label: 'Live Simulation', icon: <PlaySquare size={16} /> },
-    { path: '/import',     label: 'Data Import',  icon: <Upload size={16} /> },
-    { path: '/topology',   label: 'Topology',     icon: <Network size={16} /> },
+    { path: '/simulation', label: 'Simulation', icon: <PlaySquare size={16} /> },
   ];
 
   return (

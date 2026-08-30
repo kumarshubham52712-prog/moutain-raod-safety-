@@ -1,6 +1,6 @@
 import { Sensor, SensorReading, SensorType } from '../../types';
 import { SENSOR_TYPE_CONFIGS } from '../../config/sensorTypes';
-import { SUBSTATION_POSITIONS, SUBSTATION_MASTER_MAP } from '../../config/geography';
+import { SUBSTATION_POSITIONS, MASTER_STATION_POSITIONS, SUBSTATION_MASTER_MAP } from '../../config/geography';
 
 // ── Helper utilities ──────────────────────────────────────────
 
@@ -40,7 +40,7 @@ function getSensorRiskLevel(value: number, cfg: typeof SENSOR_TYPE_CONFIGS['IPI'
 function makeSensor(
   id: string,
   type: SensorType,
-  substationId: string,
+  substationId: string, // could be masterId
   latOffset: number,
   lonOffset: number,
   initValue: number,
@@ -48,12 +48,12 @@ function makeSensor(
   signal: number,
 ): Sensor {
   const cfg = SENSOR_TYPE_CONFIGS[type];
-  const pos = SUBSTATION_POSITIONS[substationId];
+  const pos = SUBSTATION_POSITIONS[substationId] || MASTER_STATION_POSITIONS[substationId];
   if (!pos) {
-    throw new Error(`No position found for substation ${substationId}`);
+    throw new Error(`No position found for location ${substationId}`);
   }
-  const masterId = SUBSTATION_MASTER_MAP[substationId] ?? 'MASTER-01';
-  const isAbnormal = initValue > cfg.warningThreshold;
+  const isMaster = substationId.startsWith('MASTER');
+  const masterId = isMaster ? substationId : (SUBSTATION_MASTER_MAP[substationId] ?? 'MASTER-01');
   const riskLevel = getSensorRiskLevel(initValue, cfg);
 
   return {
@@ -77,7 +77,7 @@ function makeSensor(
     highRiskThreshold: cfg.highRiskThreshold,
     criticalThreshold: cfg.criticalThreshold,
     riskLevel,
-    isAbnormal,
+    isAbnormal: initValue > cfg.warningThreshold,
     history: generateHistory(
       Math.max(0.1, initValue * 0.7),
       Math.abs(cfg.normalMax * 0.15),
@@ -99,7 +99,12 @@ interface SeedSet {
 }
 
 const seeds: Record<number, SeedSet> = {
+  // Master Station local sensors
   1:  { ipi: { val: 1.2, bat: 92, sig: 87 }, vwp: { val: 32.5, bat: 88, sig: 83 }, geo: { val: 0.18, bat: 95, sig: 90 }, ext: { val: 1.5, bat: 90, sig: 85 } },
+  11: { ipi: { val: 1.6, bat: 89, sig: 84 }, vwp: { val: 38.0, bat: 85, sig: 80 }, geo: { val: 0.22, bat: 91, sig: 86 }, ext: { val: 2.1, bat: 87, sig: 82 } },
+  21: { ipi: { val: 1.4, bat: 88, sig: 83 }, vwp: { val: 35.0, bat: 86, sig: 81 }, geo: { val: 0.20, bat: 90, sig: 85 }, ext: { val: 1.9, bat: 87, sig: 82 } },
+
+  // MASTER-01 substations (IDs 2-10)
   2:  { ipi: { val: 1.8, bat: 85, sig: 79 }, vwp: { val: 41.0, bat: 81, sig: 75 }, geo: { val: 0.25, bat: 88, sig: 82 }, ext: { val: 1.9, bat: 90, sig: 84 } },
   3:  { ipi: { val: 4.6, bat: 73, sig: 68 }, vwp: { val: 64.5, bat: 78, sig: 71 }, geo: { val: 0.95, bat: 82, sig: 77 }, ext: { val: 4.2, bat: 80, sig: 74 } },
   4:  { ipi: { val: 6.8, bat: 68, sig: 63 }, vwp: { val: 88.0, bat: 71, sig: 66 }, geo: { val: 1.2, bat: 75, sig: 70 }, ext: { val: 9.2, bat: 65, sig: 60 } },
@@ -109,8 +114,7 @@ const seeds: Record<number, SeedSet> = {
   8:  { ipi: { val: 3.2, bat: 76, sig: 70 }, vwp: { val: 52.0, bat: 78, sig: 73 }, geo: { val: 0.60, bat: 80, sig: 75 }, ext: { val: 4.1, bat: 78, sig: 72 } },
   9:  { ipi: { val: 2.8, bat: 84, sig: 79 }, vwp: { val: 55.0, bat: 80, sig: 74 }, geo: { val: 0.72, bat: 88, sig: 83 }, ext: { val: 3.5, bat: 82, sig: 76 } },
   10: { ipi: { val: 1.0, bat: 90, sig: 85 }, vwp: { val: 36.0, bat: 86, sig: 81 }, geo: { val: 0.28, bat: 92, sig: 87 }, ext: { val: 1.7, bat: 88, sig: 84 } },
-  // MASTER-02 substations
-  11: { ipi: { val: 1.6, bat: 89, sig: 84 }, vwp: { val: 38.0, bat: 85, sig: 80 }, geo: { val: 0.22, bat: 91, sig: 86 }, ext: { val: 2.1, bat: 87, sig: 82 } },
+  // MASTER-02 substations (IDs 12-20; ID 11 = Master itself)
   12: { ipi: { val: 3.5, bat: 78, sig: 72 }, vwp: { val: 58.0, bat: 76, sig: 70 }, geo: { val: 0.85, bat: 80, sig: 74 }, ext: { val: 5.2, bat: 74, sig: 68 } },
   13: { ipi: { val: 4.2, bat: 72, sig: 66 }, vwp: { val: 68.0, bat: 74, sig: 68 }, geo: { val: 1.1, bat: 77, sig: 71 }, ext: { val: 6.8, bat: 70, sig: 64 } },
   14: { ipi: { val: 1.1, bat: 91, sig: 86 }, vwp: { val: 30.0, bat: 87, sig: 82 }, geo: { val: 0.16, bat: 93, sig: 88 }, ext: { val: 1.8, bat: 89, sig: 84 } },
@@ -120,8 +124,7 @@ const seeds: Record<number, SeedSet> = {
   18: { ipi: { val: 2.8, bat: 80, sig: 74 }, vwp: { val: 52.0, bat: 78, sig: 72 }, geo: { val: 0.55, bat: 83, sig: 77 }, ext: { val: 3.8, bat: 79, sig: 73 } },
   19: { ipi: { val: 1.9, bat: 86, sig: 80 }, vwp: { val: 42.0, bat: 84, sig: 78 }, geo: { val: 0.30, bat: 89, sig: 83 }, ext: { val: 2.3, bat: 85, sig: 80 } },
   20: { ipi: { val: 1.0, bat: 92, sig: 87 }, vwp: { val: 28.0, bat: 90, sig: 85 }, geo: { val: 0.12, bat: 94, sig: 89 }, ext: { val: 1.4, bat: 91, sig: 86 } },
-  // MASTER-03 substations
-  21: { ipi: { val: 1.4, bat: 88, sig: 83 }, vwp: { val: 35.0, bat: 86, sig: 81 }, geo: { val: 0.20, bat: 90, sig: 85 }, ext: { val: 1.9, bat: 87, sig: 82 } },
+  // MASTER-03 substations (IDs 22-30; ID 21 = Master itself)
   22: { ipi: { val: 2.6, bat: 81, sig: 75 }, vwp: { val: 50.0, bat: 79, sig: 73 }, geo: { val: 0.52, bat: 84, sig: 78 }, ext: { val: 3.3, bat: 80, sig: 74 } },
   23: { ipi: { val: 4.0, bat: 70, sig: 64 }, vwp: { val: 66.0, bat: 73, sig: 67 }, geo: { val: 1.0, bat: 76, sig: 70 }, ext: { val: 6.5, bat: 69, sig: 63 } },
   24: { ipi: { val: 1.2, bat: 90, sig: 85 }, vwp: { val: 32.0, bat: 88, sig: 83 }, geo: { val: 0.17, bat: 92, sig: 87 }, ext: { val: 1.6, bat: 89, sig: 84 } },
@@ -133,21 +136,39 @@ const seeds: Record<number, SeedSet> = {
   30: { ipi: { val: 0.6, bat: 95, sig: 90 }, vwp: { val: 18.0, bat: 93, sig: 88 }, geo: { val: 0.05, bat: 97, sig: 92 }, ext: { val: 0.8, bat: 94, sig: 89 } },
 };
 
-// ── Generate all 120 sensors ────────────────────────────────
+// Substations with sensors: 2-10, 12-20, 22-30 (IDs 1,11,21 are Master Stations)
+const SUBSTATION_NUMBERS = [
+  2,3,4,5,6,7,8,9,10,
+  12,13,14,15,16,17,18,19,20,
+  22,23,24,25,26,27,28,29,30,
+];
+
+// ── Generate all 120 sensors (108 subs + 12 master local) ──
 const pad = (n: number) => String(n).padStart(2, '0');
+
+function generateSensorsForLocation(idPrefix: string, subId: string, sensorId: string, seed: SeedSet): Sensor[] {
+  return [
+    makeSensor(`IPI-${sensorId}`, 'IPI',          subId,  0.002, -0.001, seed.ipi.val, seed.ipi.bat, seed.ipi.sig),
+    makeSensor(`VWP-${sensorId}`, 'VWP',          subId, -0.001,  0.002, seed.vwp.val, seed.vwp.bat, seed.vwp.sig),
+    makeSensor(`GEO-${sensorId}`, 'GEOPHONE',     subId,  0.001,  0.001, seed.geo.val, seed.geo.bat, seed.geo.sig),
+    makeSensor(`EXT-${sensorId}`, 'EXTENSOMETER', subId, -0.002, -0.001, seed.ext.val, seed.ext.bat, seed.ext.sig),
+  ];
+}
 
 function buildSensors(): Sensor[] {
   const allSensors: Sensor[] = [];
 
-  for (let subNum = 1; subNum <= 30; subNum++) {
+  for (const subNum of SUBSTATION_NUMBERS) {
     const subId = `SUB-${pad(subNum)}`;
     const seed = seeds[subNum];
     if (!seed) continue;
+    allSensors.push(...generateSensorsForLocation(subId, subId, pad(subNum), seed));
+  }
 
-    allSensors.push(makeSensor(`IPI-${pad(subNum)}`, 'IPI',          subId,  0.002, -0.001, seed.ipi.val, seed.ipi.bat, seed.ipi.sig));
-    allSensors.push(makeSensor(`VWP-${pad(subNum)}`, 'VWP',          subId, -0.001,  0.002, seed.vwp.val, seed.vwp.bat, seed.vwp.sig));
-    allSensors.push(makeSensor(`GEO-${pad(subNum)}`, 'GEOPHONE',     subId,  0.001,  0.001, seed.geo.val, seed.geo.bat, seed.geo.sig));
-    allSensors.push(makeSensor(`EXT-${pad(subNum)}`, 'EXTENSOMETER', subId, -0.002, -0.001, seed.ext.val, seed.ext.bat, seed.ext.sig));
+  const masterMap: Record<number, string> = { 1: 'MASTER-01', 11: 'MASTER-02', 21: 'MASTER-03' };
+  for (const [seedId, masterId] of Object.entries(masterMap)) {
+    const seed = seeds[Number(seedId)];
+    allSensors.push(...generateSensorsForLocation(masterId, masterId, masterId, seed));
   }
 
   return allSensors;

@@ -39,10 +39,12 @@ function makeMaster(
   };
 }
 
+// Each Master manages 9 Substations × 4 sensors = 36 sensors
+// The Master itself (IDs 1, 11, 21) also performs local monitoring
 export const INITIAL_MASTER_STATIONS: MasterStation[] = [
-  makeMaster('MASTER-01', 'Dehradun Central Command', 40, 48),
-  makeMaster('MASTER-02', 'Mussoorie Ridge Station',  40, 35),
-  makeMaster('MASTER-03', 'Rishikesh Valley Station', 40, 28),
+  makeMaster('MASTER-01', 'Dehradun Central Command', 36, 48),
+  makeMaster('MASTER-02', 'Mussoorie Ridge Station',  36, 35),
+  makeMaster('MASTER-03', 'Rishikesh Valley Station', 36, 28),
 ];
 
 export const getMasterStationById = (id: string): MasterStation | undefined =>

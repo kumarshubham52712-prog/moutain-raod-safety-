@@ -3,17 +3,20 @@ import { useMonitoringStore } from '../store/monitoringStore';
 import { Card, SectionHeader, StatusBadge } from '../components/common';
 import { getRiskLevelConfig } from '../config/thresholds';
 import { format } from 'date-fns';
-import { Map, AlertTriangle, ShieldAlert, Navigation, Layers } from 'lucide-react';
+import { Map, AlertTriangle, ShieldAlert, Navigation, Layers, Trash2 } from 'lucide-react';
 import clsx from 'clsx';
 import { Link } from 'react-router-dom';
 
 export default function DangerZones() {
-  const { dangerZones, masterStations } = useMonitoringStore();
+  const { dangerZones, masterStations, clearDangerZoneHistory } = useMonitoringStore();
   const [selectedMaster, setSelectedMaster] = useState<string>('ALL');
 
+  // Filter out NORMAL zones — only show WATCH or above
+  const activeZones = dangerZones.filter(z => z.riskScore > 30);
+
   const filteredZones = selectedMaster === 'ALL'
-    ? dangerZones
-    : dangerZones.filter(z => z.masterStationId === selectedMaster);
+    ? activeZones
+    : activeZones.filter(z => z.masterStationId === selectedMaster);
 
   // Sort by risk descending
   const sortedZones = [...filteredZones].sort((a, b) => b.riskScore - a.riskScore);
@@ -34,7 +37,22 @@ export default function DangerZones() {
             <option key={m.id} value={m.id}>{m.id} ({m.name})</option>
           ))}
         </select>
+
+        <button
+          onClick={clearDangerZoneHistory}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold hover:bg-red-500/20 transition-colors"
+        >
+          <Trash2 size={12} /> Clear History
+        </button>
       </SectionHeader>
+
+      {sortedZones.length === 0 && (
+        <div className="text-center py-16 text-slate-500">
+          <ShieldAlert size={48} className="mx-auto mb-4 opacity-30" />
+          <p className="text-lg font-semibold">No Active Danger Zones</p>
+          <p className="text-sm mt-1">All monitoring zones are within normal parameters.</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sortedZones.map(zone => {

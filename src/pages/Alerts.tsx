@@ -8,17 +8,19 @@ import { Link } from 'react-router-dom';
 import type { Alert } from '../types';
 
 export default function Alerts() {
-  const { alerts, masterStations, acknowledgeAlert, resolveAlert } = useMonitoringStore();
+  const { alerts, masterStations, acknowledgeAlert, resolveAlert, clearAlertHistory } = useMonitoringStore();
 
   const [filter, setFilter] = useState<'ALL' | 'ACTIVE' | 'RESOLVED'>('ACTIVE');
   const [masterFilter, setMasterFilter] = useState<string>('ALL');
   const [severityFilter, setSeverityFilter] = useState<'ALL' | 'CRITICAL' | 'WARNING' | 'HIGH_RISK'>('ALL');
 
+  // Filter out INFO severity by default — only show WARNING/HIGH_RISK/CRITICAL
   const filteredAlerts = alerts.filter(a => {
     if (filter === 'ACTIVE' && a.resolved) return false;
     if (filter === 'RESOLVED' && !a.resolved) return false;
     if (masterFilter !== 'ALL' && a.masterStationId !== masterFilter) return false;
     if (severityFilter !== 'ALL' && a.severity !== severityFilter) return false;
+    if (a.severity === 'INFO') return false; // Hide INFO/normal alerts
     return true;
   });
 
@@ -85,6 +87,13 @@ export default function Alerts() {
           <span className="text-xs text-slate-500 ml-auto">
             Showing {filteredAlerts.length} alerts
           </span>
+
+          <button
+            onClick={clearAlertHistory}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold hover:bg-red-500/20 transition-colors"
+          >
+            <Trash2 size={12} /> Clear History
+          </button>
         </div>
       </Card>
 

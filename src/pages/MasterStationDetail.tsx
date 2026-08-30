@@ -114,7 +114,7 @@ export default function MasterStationDetail() {
           <MetricRow label="Edge Connection"   value={master.edgeConnectionStatus} />
           <MetricRow label="Risk Score"        value={`${master.aggregatedRiskScore}/100`} highlight />
         </div>
-        <ProgressBar value={master.loraNetworkHealth} label="LoRa Network Health" color="#06b6d4" />
+        <ProgressBar value={master.loraNetworkHealth} label="Network Health" color="#06b6d4" />
       </Card>
 
       {/* Substation Status Summary */}
@@ -137,6 +137,33 @@ export default function MasterStationDetail() {
         </div>
       </Card>
 
+      {/* Local Master Monitoring (Master's own sensors) */}
+      <Card className="p-4 bg-brand-900/10 border-brand-500/20">
+        <SectionHeader 
+          title="Local Master Monitoring" 
+          subtitle="Sensors directly attached to this master station" 
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+          {sensors.filter(s => s.substationId === master.id).map(sensor => {
+            const sCfg = getRiskLevelConfig(sensor.riskLevel);
+            return (
+              <div key={sensor.id} className="bg-surface-800 p-3 rounded-lg border border-surface-700 shadow-sm relative overflow-hidden group">
+                {sensor.riskLevel === 'CRITICAL' && (
+                  <div className="absolute inset-0 border-2 border-red-500/50 rounded-lg animate-pulse-slow pointer-events-none" />
+                )}
+                <div className="flex justify-between items-start mb-2 relative z-10">
+                  <span className="text-xs font-bold font-mono text-slate-300">{sensor.type}</span>
+                  <StatusBadge level={sensor.riskLevel} size="xs" showDot={false} />
+                </div>
+                <div className="text-xl font-black font-mono relative z-10" style={{ color: sCfg.color }}>
+                  {sensor.currentValue.toFixed(2)} <span className="text-[10px] text-slate-500">{sensor.unit}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
       {/* Connected Substations */}
       <Card className="p-4">
         <SectionHeader
@@ -144,7 +171,7 @@ export default function MasterStationDetail() {
           subtitle={`${masterSubs.length} edge stations reporting to ${master.id}`}
         />
         <div className="space-y-2">
-          {masterSubs.map(sub => {
+          {masterSubs.slice().sort((a, b) => b.riskScore - a.riskScore).map(sub => {
             const sCfg = getRiskLevelConfig(sub.riskLevel);
             const subSensors = sensors.filter(s => sub.sensorIds.includes(s.id));
             return (
@@ -164,7 +191,7 @@ export default function MasterStationDetail() {
                     <CommBadge status={sub.communicationStatus} />
                   </div>
                   <p className="text-[10px] text-slate-500 truncate mt-0.5">
-                    {subSensors.length} sensors · LoRa {sub.loraSignal}% · Battery {sub.batteryLevel.toFixed(0)}%
+                    {subSensors.length} sensors · Signal {sub.loraSignal}% · Battery {sub.batteryLevel.toFixed(0)}%
                   </p>
                 </div>
                 <span className="text-sm font-mono font-bold" style={{ color: sCfg.color }}>

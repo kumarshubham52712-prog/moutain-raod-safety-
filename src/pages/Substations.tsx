@@ -63,7 +63,7 @@ export default function Substations() {
                   <CommBadge status={sub.communicationStatus} />
                 </div>
 
-                <ProgressBar value={sub.loraSignal} label="LoRa Signal" color="#06b6d4" />
+                <ProgressBar value={sub.loraSignal} label="Signal" color="#06b6d4" />
 
                 <div className="mt-auto pt-3 flex justify-between text-[10px] text-slate-600">
                   <span>Risk: {sub.riskScore}/100</span>

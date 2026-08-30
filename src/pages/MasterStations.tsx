@@ -64,7 +64,7 @@ export default function MasterStations() {
 
                 {/* Health bar */}
                 <div className="mt-4">
-                  <ProgressBar value={master.loraNetworkHealth} label="LoRa Network Health" color="#06b6d4" />
+                  <ProgressBar value={master.loraNetworkHealth} label="Network Health" color="#06b6d4" />
                 </div>
 
                 {/* Sub mini-status */}

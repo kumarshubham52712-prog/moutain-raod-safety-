@@ -8,8 +8,13 @@ import { ShieldAlert, Activity, Wifi, Server, MapPin, Play, Clock } from 'lucide
 import { Link } from 'react-router-dom';
 
 export default function Overview() {
-  const { systemStatus, masterStations, simulation, startSimulation, pauseSimulation } = useMonitoringStore();
+  const { systemStatus, masterStations, substations, simulation, startSimulation, pauseSimulation } = useMonitoringStore();
   const overallRiskCfg = getRiskLevelConfig(systemStatus.overallRiskLevel);
+
+  // Priority Stations (Abnormal)
+  const priorityStations = substations
+    .filter(s => s.riskScore > 30) // WATCH or above
+    .sort((a, b) => b.riskScore - a.riskScore);
 
   return (
     <div className="space-y-6">
@@ -72,13 +77,60 @@ export default function Overview() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Master Station Cards */}
-        <div className="lg:col-span-2 space-y-4">
-          <SectionHeader
-            title="Master Station Status"
-            subtitle="Dehradun / Mussoorie / Rishikesh"
-          />
-          {masterStations.map(master => {
+        {/* Main Content Col */}
+        <div className="lg:col-span-2 space-y-6">
+
+          {/* Priority Stations */}
+          {priorityStations.length > 0 && (
+            <div className="space-y-4">
+              <SectionHeader
+                title="Priority Stations"
+                subtitle={`${priorityStations.length} substations requiring attention`}
+              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {priorityStations.map(sub => {
+                  const sCfg = getRiskLevelConfig(sub.riskLevel);
+                  return (
+                    <Link
+                      key={sub.id}
+                      to={`/substations/${sub.id}`}
+                      className="block bg-surface-800 border border-surface-700 rounded-xl p-4 hover:border-surface-500 transition-colors shadow-lg group relative overflow-hidden"
+                      style={sub.riskLevel === 'CRITICAL' ? { borderColor: `${sCfg.color}80`, boxShadow: `0 0 15px ${sCfg.color}20` } : {}}
+                    >
+                      {/* Flashing critical border overlay */}
+                      {sub.riskLevel === 'CRITICAL' && (
+                        <div className="absolute inset-0 border-2 border-red-500/50 rounded-xl animate-pulse-slow pointer-events-none" />
+                      )}
+                      
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-white font-mono group-hover:text-brand-400 transition-colors">{sub.id}</h3>
+                            <StatusBadge level={sub.riskLevel} size="xs" />
+                          </div>
+                          <p className="text-xs text-slate-500">{sub.name}</p>
+                        </div>
+                        <RiskGauge score={sub.riskScore} size={40} />
+                      </div>
+                      
+                      <div className="flex items-center gap-4 text-xs text-slate-400 mt-4 pt-3 border-t border-surface-700/50">
+                        <span className="flex items-center gap-1"><Wifi size={12}/> {sub.masterStationId}</span>
+                        <span className="flex items-center gap-1"><Activity size={12}/> {sub.sensorIds.length} Sensors</span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Master Station Status */}
+          <div className="space-y-4">
+            <SectionHeader
+              title="Master Station Status"
+              subtitle="Dehradun / Mussoorie / Rishikesh"
+            />
+            {masterStations.map(master => {
             const mCfg = getRiskLevelConfig(master.riskLevel);
             return (
               <div key={master.id} className="bg-surface-800 border border-surface-700 rounded-xl p-5 hover:border-surface-600 transition-colors shadow-lg">
@@ -121,7 +173,7 @@ export default function Overview() {
 
                 {/* Substation mini-map */}
                 <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
-                  <span>LoRa Network Health: {master.loraNetworkHealth}%</span>
+                  <span>Network Health: {master.loraNetworkHealth}%</span>
                   <span>{master.criticalSensors} Critical Sensors</span>
                 </div>
                 <div className="h-1.5 w-full bg-surface-700 rounded-full overflow-hidden">
@@ -130,6 +182,7 @@ export default function Overview() {
               </div>
             );
           })}
+          </div>
         </div>
 
         {/* Right Col: Event Stream & Alerts */}

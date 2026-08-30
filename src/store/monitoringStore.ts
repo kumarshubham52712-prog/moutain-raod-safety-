@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import {
   Sensor, Substation, MasterStation, DangerZone,
-  Alert, EventLog, SimulationState, SystemStatus, SimulationScenario
+  Alert, EventLog, SimulationState, SystemStatus, SimulationScenario, EventType
 } from '../types';
 import { dataAdapter }                 from '../services/dataAdapter';
 import { simulationTick, getEnvState } from '../services/simulationEngine';
@@ -42,8 +42,13 @@ interface MonitoringState {
   setMasterOnline:      (masterId: string, online: boolean) => void;
 
   // Alert management
-  acknowledgeAlert: (id: string) => void;
-  resolveAlert:     (id: string) => void;
+  acknowledgeAlert:       (id: string) => void;
+  resolveAlert:           (id: string) => void;
+  clearAlertHistory:      () => void;
+  clearDangerZoneHistory: () => void;
+
+  // User-driven simulation
+  playScenario:           () => void;
 
   // Data Import
   applySensorImport: (sensors: Sensor[]) => void;
@@ -440,6 +445,85 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
 
     applySensorImport: (updatedSensors: Sensor[]) => {
       set({ sensors: updatedSensors });
+    },
+
+    // ── Clear History ────────────────────────────────────────
+    clearAlertHistory: () => {
+      set({ alerts: [] });
+    },
+    clearDangerZoneHistory: () => {
+      set(state => ({
+        dangerZones: state.dangerZones.map(dz => ({
+          ...dz,
+          riskScore: 0,
+          riskLevel: 'NORMAL' as const,
+          status: 'RESOLVED' as const,
+          abnormalSensorCount: 0,
+          triggeringSensorIds: [],
+        })),
+      }));
+    },
+
+    // ── User-Driven Simulation (PLAY button) ─────────────────
+    playScenario: () => {
+      const state = get();
+      const ts = () => new Date().toISOString();
+      const events: EventLog[] = [];
+
+      // Stage 1: Lock in sensor readings
+      events.push({ id: genEventId(), timestamp: ts(), eventType: 'SENSOR_READING' as EventType, source: 'SYSTEM', message: '▶ Stage 1: Sensor readings locked in — processing prepared values', severity: 'INFO' });
+
+      // Stage 2: Substation risk computation
+      const propagated = propagateChanges(state.sensors, state.substations, state.masterStations, state.dangerZones);
+      events.push({ id: genEventId(), timestamp: ts(), eventType: 'SUBSTATION_PACKET' as EventType, source: 'SYSTEM', message: '▶ Stage 2: Substation risk scores recomputed from sensor data', severity: 'INFO' });
+
+      // Stage 3: LoRa packet transmission
+      events.push({ id: genEventId(), timestamp: ts(), eventType: 'LORA_TRANSMISSION' as EventType, source: 'SYSTEM', message: '▶ Stage 3: LoRa packets transmitted to Master Stations', severity: 'INFO' });
+
+      // Stage 4: Master Station aggregation
+      events.push({ id: genEventId(), timestamp: ts(), eventType: 'MASTER_RECEIVE' as EventType, source: 'SYSTEM', message: '▶ Stage 4: Master Stations aggregating substation data', severity: 'INFO' });
+
+      // Stage 5: Edge processing
+      events.push({ id: genEventId(), timestamp: ts(), eventType: 'EDGE_PROCESS' as EventType, source: 'SYSTEM', message: '▶ Stage 5: Edge processing and data validation complete', severity: 'INFO' });
+
+      // Stage 6: Risk engine evaluation
+      const abnormalSubs = propagated.substations.filter(s => s.riskLevel !== 'NORMAL' && s.riskLevel !== 'WATCH');
+      const riskSeverity = abnormalSubs.some(s => s.riskLevel === 'CRITICAL') ? 'CRITICAL' : abnormalSubs.length > 0 ? 'WARNING' : 'INFO';
+      events.push({ id: genEventId(), timestamp: ts(), eventType: 'RISK_UPDATE' as EventType, source: 'RISK_ENGINE', message: `▶ Stage 6: Risk engine evaluated — ${abnormalSubs.length} substations above normal threshold`, severity: riskSeverity });
+
+      // Stage 7: Danger zone update
+      events.push({ id: genEventId(), timestamp: ts(), eventType: 'ZONE_STATUS_CHANGE' as EventType, source: 'SYSTEM', message: `▶ Stage 7: Danger zone statuses updated`, severity: 'INFO' });
+
+      // Stage 8: Alert generation for abnormal stations
+      const newAlerts: Alert[] = [];
+      for (const sub of abnormalSubs) {
+        const severity = sub.riskLevel === 'CRITICAL' ? 'CRITICAL' : sub.riskLevel === 'HIGH_RISK' ? 'HIGH_RISK' : 'WARNING';
+        newAlerts.push({
+          id: `ALT-${Date.now()}-${sub.id}`,
+          severity,
+          title: `${sub.id} — ${sub.riskLevel.replace('_', ' ')}`,
+          message: `Risk score ${sub.riskScore}/100. Sensors at ${sub.id} show elevated readings requiring attention.`,
+          timestamp: ts(),
+          substationId: sub.id,
+          masterStationId: sub.masterStationId,
+          location: sub.name,
+          acknowledged: false,
+          resolved: false,
+        });
+        events.push({ id: genEventId(), timestamp: ts(), eventType: 'ALERT_GENERATED' as EventType, source: sub.id, message: `▶ Stage 8: Alert generated for ${sub.id} — ${severity}`, severity: severity === 'CRITICAL' ? 'CRITICAL' : 'WARNING' });
+      }
+
+      const updatedAlerts = [...newAlerts, ...state.alerts].slice(0, 200);
+      const systemStatus = computeSystemStatus(state.sensors, propagated.substations, propagated.masterStations, updatedAlerts);
+
+      set({
+        substations: propagated.substations,
+        masterStations: propagated.masterStations,
+        dangerZones: propagated.dangerZones,
+        alerts: updatedAlerts,
+        eventLog: [...events.reverse(), ...state.eventLog].slice(0, 500),
+        systemStatus,
+      });
     },
   };
 });

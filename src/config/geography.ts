@@ -36,14 +36,14 @@ export const MASTER_STATION_POSITIONS: Record<string, {
 };
 
 // ── Substation Positions ──────────────────────────────────────────
-// 30 substations, 10 per Master Station
+// 27 substations, 9 per Master Station
+// IDs 1, 11, 21 are the Master Stations themselves (local monitoring role)
 // DEMO coordinates — not actual surveyed deployment positions
 
 export const SUBSTATION_POSITIONS: Record<string, {
   lat: number; lon: number; elevation: number; area: string;
 }> = {
-  // ── MASTER-01 Substations (SUB-01 to SUB-10) ──────────
-  'SUB-01': { lat: 30.3800, lon: 77.9500, elevation: 1420, area: 'Mussoorie Foothills West' },
+  // ── MASTER-01 Substations (SUB-02 to SUB-10) ──────────
   'SUB-02': { lat: 30.4100, lon: 77.9800, elevation: 1680, area: 'Kempty Falls Ridge' },
   'SUB-03': { lat: 30.4350, lon: 78.0200, elevation: 1950, area: 'Cloud End Escarpment' },
   'SUB-04': { lat: 30.4050, lon: 78.0600, elevation: 1720, area: 'Lal Tibba Slope' },
@@ -54,8 +54,7 @@ export const SUBSTATION_POSITIONS: Record<string, {
   'SUB-09': { lat: 30.3100, lon: 77.9700, elevation: 890,  area: 'Doiwala Embankment' },
   'SUB-10': { lat: 30.3600, lon: 77.9300, elevation: 1150, area: 'Lachhiwala Bluff' },
 
-  // ── MASTER-02 Substations (SUB-11 to SUB-20) ──────────
-  'SUB-11': { lat: 30.4600, lon: 77.9200, elevation: 1820, area: 'Benog Wildlife Ridge' },
+  // ── MASTER-02 Substations (SUB-12 to SUB-20) ──────────
   'SUB-12': { lat: 30.4800, lon: 77.9500, elevation: 2050, area: 'Jabarkhet Canopy Trail' },
   'SUB-13': { lat: 30.4700, lon: 77.9800, elevation: 1960, area: 'Park Estate Slope' },
   'SUB-14': { lat: 30.4400, lon: 77.9100, elevation: 1750, area: 'Company Garden Hillside' },
@@ -66,8 +65,7 @@ export const SUBSTATION_POSITIONS: Record<string, {
   'SUB-19': { lat: 30.4650, lon: 77.9700, elevation: 1990, area: 'Landour Bazaar Slope' },
   'SUB-20': { lat: 30.4200, lon: 77.8800, elevation: 1500, area: 'Bhatta Falls Valley' },
 
-  // ── MASTER-03 Substations (SUB-21 to SUB-30) ──────────
-  'SUB-21': { lat: 30.2700, lon: 78.1500, elevation: 700,  area: 'Shivpuri Rapids Bank' },
+  // ── MASTER-03 Substations (SUB-22 to SUB-30) ──────────
   'SUB-22': { lat: 30.2400, lon: 78.1300, elevation: 650,  area: 'Rishikesh Bypass Cut' },
   'SUB-23': { lat: 30.2800, lon: 78.0800, elevation: 740,  area: 'Tapovan Cliff Face' },
   'SUB-24': { lat: 30.2500, lon: 78.1000, elevation: 690,  area: 'Ram Jhula Approach' },
@@ -80,10 +78,12 @@ export const SUBSTATION_POSITIONS: Record<string, {
 };
 
 // Master → Substation mapping
+// IDs 1, 11, 21 are the Master Stations themselves (local monitoring)
+// Each Master manages 9 separate Substations
 export const MASTER_SUBSTATION_MAP: Record<string, string[]> = {
-  'MASTER-01': ['SUB-01','SUB-02','SUB-03','SUB-04','SUB-05','SUB-06','SUB-07','SUB-08','SUB-09','SUB-10'],
-  'MASTER-02': ['SUB-11','SUB-12','SUB-13','SUB-14','SUB-15','SUB-16','SUB-17','SUB-18','SUB-19','SUB-20'],
-  'MASTER-03': ['SUB-21','SUB-22','SUB-23','SUB-24','SUB-25','SUB-26','SUB-27','SUB-28','SUB-29','SUB-30'],
+  'MASTER-01': ['SUB-02','SUB-03','SUB-04','SUB-05','SUB-06','SUB-07','SUB-08','SUB-09','SUB-10'],
+  'MASTER-02': ['SUB-12','SUB-13','SUB-14','SUB-15','SUB-16','SUB-17','SUB-18','SUB-19','SUB-20'],
+  'MASTER-03': ['SUB-22','SUB-23','SUB-24','SUB-25','SUB-26','SUB-27','SUB-28','SUB-29','SUB-30'],
 };
 
 // Reverse lookup: substation → master
