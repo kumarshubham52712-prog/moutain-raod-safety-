@@ -49,8 +49,7 @@ export default function App() {
           <Route path="/master-stations/:id"   element={<P><MasterStationDetail /></P>} />
           <Route path="/substations"           element={<P><Substations /></P>} />
           <Route path="/substations/:id"       element={<P><SubstationDetail /></P>} />
-          <Route path="/sensors"               element={<P><SensorsListPage /></P>} />
-          <Route path="/sensors/:id"           element={<P><SensorDetail /></P>} />
+          {/* Sensors pages are removed, functionality moved to Substation/Master Station views */}
           <Route path="/map"                   element={<P><LiveMap /></P>} />
           <Route path="/dataflow"              element={<P><DataFlow /></P>} />
           <Route path="/analytics"             element={<P><SensorAnalytics /></P>} />

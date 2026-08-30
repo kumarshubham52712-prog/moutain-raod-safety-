@@ -50,7 +50,6 @@ export function Sidebar() {
     { path: '/',              label: 'Overview',         icon: <LayoutDashboard size={16} /> },
     { path: '/master-stations', label: 'Master Stations', icon: <Server size={16} /> },
     { path: '/substations',   label: 'Substations',      icon: <Wifi size={16} /> },
-    { path: '/sensors',       label: 'Sensors',          icon: <Activity size={16} /> },
     { path: '/map',           label: 'Live Map',         icon: <Map size={16} /> },
     { path: '/dataflow',      label: 'Data Flow',        icon: <Radio size={16} /> },
   ];
@@ -64,6 +63,7 @@ export function Sidebar() {
 
   const toolItems: NavItem[] = [
     { path: '/simulation', label: 'Simulation', icon: <PlaySquare size={16} /> },
+    { path: '/import',     label: 'Data Import', icon: <Upload size={16} /> },
   ];
 
   return (

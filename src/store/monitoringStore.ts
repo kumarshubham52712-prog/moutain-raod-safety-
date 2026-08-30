@@ -448,8 +448,9 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
     },
 
     // ── Clear History ────────────────────────────────────────
+
     clearAlertHistory: () => {
-      set({ alerts: [] });
+      set(state => ({ alerts: state.alerts.filter(a => !a.resolved) }));
     },
     clearDangerZoneHistory: () => {
       set(state => ({

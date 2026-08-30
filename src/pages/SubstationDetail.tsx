@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useMonitoringStore } from '../store/monitoringStore';
 import { Card, SectionHeader, StatusBadge, CommBadge, MetricRow, EventStream } from '../components/common';
-import { RiskGauge } from '../components/charts';
+import { RiskGauge, TimeSeriesChart } from '../components/charts';
 import { getRiskLevelConfig } from '../config/thresholds';
 import { getSensorTypeConfig } from '../config/sensorTypes';
 import { format } from 'date-fns';
@@ -161,8 +161,21 @@ export default function SubstationDetail() {
                   {/* Current Value Display */}
                   <div className="text-center py-4 bg-surface-900/80 rounded-xl border border-surface-700 shadow-inner relative z-10 mt-2">
                     <div className="text-3xl font-black font-mono tracking-tight transition-colors duration-300" style={{ color: sRisk.color }}>
-                      {targetVal.toFixed(2)} <span className="text-sm font-bold text-slate-500 ml-1">{typeCfg.unit}</span>
+                      {sensor.currentValue.toFixed(2)} <span className="text-sm font-bold text-slate-500 ml-1">{typeCfg.unit}</span>
                     </div>
+                  </div>
+
+                  {/* Time Series Graph */}
+                  <div className="mt-4 relative z-10 bg-surface-900/50 p-2 rounded-xl border border-surface-700">
+                    <TimeSeriesChart
+                      readings={sensor.history}
+                      color={typeCfg.color}
+                      unit={typeCfg.unit}
+                      warningThreshold={typeCfg.warningThreshold}
+                      criticalThreshold={typeCfg.criticalThreshold}
+                      label={sensor.type}
+                      height={120}
+                    />
                   </div>
 
                   {/* Manual Target Override Slider */}
