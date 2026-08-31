@@ -37,9 +37,9 @@ export default function DataFlow() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* ── 1. Master Stations ───────────────────────────────── */}
-        <Card className="p-4 flex flex-col h-[600px]">
-          <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-brand-600/20 text-brand-400 flex items-center justify-center">1</span>
+        <Card className="p-5 flex flex-col h-[600px] bg-white border-slate-200 shadow-sm">
+          <h3 className="text-sm font-bold text-slate-900 mb-5 flex items-center gap-3">
+            <span className="w-7 h-7 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center shadow-sm">1</span>
             Master Stations
           </h3>
           <div className="space-y-3 overflow-y-auto pr-2 flex-1">
@@ -52,21 +52,21 @@ export default function DataFlow() {
                   onClick={() => { setSelectedMaster(m.id); setSelectedSub(null); }}
                   className={clsx(
                     'w-full text-left p-4 rounded-xl border transition-all relative',
-                    isActive ? 'bg-surface-700/50 scale-[1.02] shadow-lg' : 'bg-surface-800 hover:bg-surface-700 opacity-60 hover:opacity-100',
+                    isActive ? 'bg-slate-50 scale-[1.02] shadow-md border-slate-200' : 'bg-white hover:bg-slate-50 opacity-70 hover:opacity-100 border-slate-100',
                   )}
-                  style={{ borderColor: isActive ? rCfg.color : 'rgba(255,255,255,0.1)' }}
+                  style={{ borderColor: isActive ? rCfg.color : undefined }}
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <Server size={20} style={{ color: rCfg.color }} />
-                    <span className="font-bold font-mono text-white text-base">{m.id}</span>
+                    <span className="font-bold font-mono text-slate-900 text-base">{m.id}</span>
                   </div>
-                  <p className="text-xs text-slate-400 mb-2">{m.name}</p>
-                  <div className="flex justify-between text-[10px] text-slate-500">
+                  <p className="text-xs font-medium text-slate-500 mb-3">{m.name}</p>
+                  <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                     <span>{m.substationIds.length} Subs</span>
                     <span>Risk: {m.aggregatedRiskScore}</span>
                   </div>
                   {isActive && (
-                    <div className="absolute top-1/2 -right-4 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-brand-400 z-10">
+                    <div className="absolute top-1/2 -right-5 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-brand-600 z-10">
                       <ArrowRight size={24} />
                     </div>
                   )}
@@ -77,12 +77,12 @@ export default function DataFlow() {
         </Card>
 
         {/* ── 2. Substations ───────────────────────────────────── */}
-        <Card className="p-4 flex flex-col h-[600px] border-l-4 border-l-brand-500/50">
-          <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center">2</span>
+        <Card className="p-5 flex flex-col h-[600px] bg-white border-l-4 border-l-cyan-500 border-y-slate-200 border-r-slate-200 shadow-sm">
+          <h3 className="text-sm font-bold text-slate-900 mb-5 flex items-center gap-3">
+            <span className="w-7 h-7 rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center shadow-sm">2</span>
             Substations (Edge Nodes)
           </h3>
-          <div className="space-y-2 overflow-y-auto pr-2 flex-1">
+          <div className="space-y-3 overflow-y-auto pr-2 flex-1">
             {masterSubs.map(s => {
               const rCfg = getRiskLevelConfig(s.riskLevel);
               const isActive = s.id === selectedSub;
@@ -91,24 +91,24 @@ export default function DataFlow() {
                   key={s.id}
                   onClick={() => setSelectedSub(s.id)}
                   className={clsx(
-                    'w-full text-left p-3 rounded-lg border transition-all relative',
-                    isActive ? 'bg-surface-700/50 scale-[1.02] shadow-lg' : 'bg-surface-800 hover:bg-surface-700 opacity-60 hover:opacity-100',
+                    'w-full text-left p-4 rounded-xl border transition-all relative',
+                    isActive ? 'bg-slate-50 scale-[1.02] shadow-md border-slate-200' : 'bg-white hover:bg-slate-50 opacity-70 hover:opacity-100 border-slate-100',
                   )}
-                  style={{ borderColor: isActive ? rCfg.color : 'rgba(255,255,255,0.05)' }}
+                  style={{ borderColor: isActive ? rCfg.color : undefined }}
                 >
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      <Wifi size={14} style={{ color: rCfg.color }} />
-                      <span className="font-bold font-mono text-white text-sm">{s.id}</span>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <Wifi size={16} style={{ color: rCfg.color }} />
+                      <span className="font-bold font-mono text-slate-900 text-sm">{s.id}</span>
                     </div>
                     <StatusBadge level={s.riskLevel} size="xs" showDot={false} />
                   </div>
-                  <div className="flex justify-between text-[10px] text-slate-500">
+                  <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                     <span>{s.sensorIds.length} Sensors</span>
                     <span>LoRa: {s.loraSignal}%</span>
                   </div>
                   {isActive && (
-                    <div className="absolute top-1/2 -right-4 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-cyan-400 z-10">
+                    <div className="absolute top-1/2 -right-5 -translate-y-1/2 w-10 h-10 flex items-center justify-center text-cyan-600 z-10">
                       <ArrowRight size={24} />
                     </div>
                   )}
@@ -119,9 +119,9 @@ export default function DataFlow() {
         </Card>
 
         {/* ── 3. Sensors ───────────────────────────────────────── */}
-        <Card className="p-4 flex flex-col h-[600px] border-l-4 border-l-purple-500/50">
-          <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center">3</span>
+        <Card className="p-5 flex flex-col h-[600px] bg-white border-l-4 border-l-purple-500 border-y-slate-200 border-r-slate-200 shadow-sm">
+          <h3 className="text-sm font-bold text-slate-900 mb-5 flex items-center gap-3">
+            <span className="w-7 h-7 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center shadow-sm">3</span>
             Sensors
           </h3>
           <div className="space-y-3 overflow-y-auto pr-2 flex-1">
@@ -133,62 +133,70 @@ export default function DataFlow() {
                 <Link
                   key={s.id}
                   to={`/sensors/${s.id}`}
-                  className="block p-3 rounded-lg border bg-surface-900/50 hover:bg-surface-700 transition-colors"
-                  style={{ borderColor: sRisk.borderColor }}
+                  className="block p-4 rounded-xl border bg-white hover:bg-slate-50 transition-colors shadow-sm"
+                  style={{ borderColor: sRisk.borderColor || '#e2e8f0' }}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <IconComp size={14} style={{ color: tCfg.color }} />
-                      <span className="font-bold font-mono text-white text-sm">{s.id}</span>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <IconComp size={16} style={{ color: tCfg.color }} />
+                      <span className="font-bold font-mono text-slate-900 text-sm">{s.id}</span>
                     </div>
                     <StatusBadge level={s.riskLevel} size="xs" />
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-slate-500">{s.type}</span>
-                    <span className="font-mono font-bold" style={{ color: sRisk.color }}>
-                      {s.currentValue.toFixed(2)} <span className="text-[10px] text-slate-500 font-sans">{s.unit}</span>
+                    <span className="text-xs font-bold text-slate-500">{s.type}</span>
+                    <span className="font-mono font-black text-lg" style={{ color: sRisk.color }}>
+                      {s.currentValue.toFixed(2)} <span className="text-[10px] font-bold text-slate-400 font-sans">{s.unit}</span>
                     </span>
                   </div>
                 </Link>
               );
             })}
             {subSensors.length === 0 && (
-              <p className="text-center text-slate-500 text-sm mt-10">Select a substation</p>
+              <p className="text-center font-medium text-slate-400 text-sm mt-10">Select a substation</p>
             )}
           </div>
         </Card>
       </div>
 
       {/* Data flow diagram */}
-      <Card className="p-6">
-        <h3 className="text-sm font-bold text-white mb-6">Logical Architecture</h3>
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center">
-          <div className="flex-1 w-full bg-surface-900 border border-surface-700 p-4 rounded-xl">
-            <Pulse size={24} className="text-purple-400 mx-auto mb-2" />
-            <p className="font-bold text-sm text-white">Sensors (120)</p>
-            <p className="text-[10px] text-slate-500">IPI, VWP, Geo, Ext</p>
-            <p className="text-[10px] text-slate-500 mt-2 font-mono">1 min polling</p>
+      <Card className="p-8 bg-white border-slate-200 shadow-sm">
+        <h3 className="text-base font-black text-slate-900 mb-6">Logical Architecture</h3>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-5 text-center">
+          <div className="flex-1 w-full bg-slate-50 border border-slate-200 p-5 rounded-2xl shadow-sm">
+            <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-3">
+              <Pulse size={24} className="text-purple-600" />
+            </div>
+            <p className="font-black text-sm text-slate-900">Sensors (120)</p>
+            <p className="text-xs font-medium text-slate-500 mt-1">IPI, VWP, Geo, Ext</p>
+            <p className="text-[10px] font-bold text-slate-400 mt-3 font-mono bg-white border border-slate-200 inline-block px-2.5 py-1 rounded-md shadow-sm">1 min polling</p>
           </div>
-          <ArrowRight size={24} className="text-slate-600 rotate-90 md:rotate-0" />
-          <div className="flex-1 w-full bg-surface-900 border border-surface-700 p-4 rounded-xl">
-            <Wifi size={24} className="text-cyan-400 mx-auto mb-2" />
-            <p className="font-bold text-sm text-white">Substations (30)</p>
-            <p className="text-[10px] text-slate-500">Data Aggregation</p>
-            <p className="text-[10px] text-cyan-400 mt-2 font-mono bg-cyan-400/10 inline-block px-2 py-0.5 rounded">LoRa 868MHz</p>
+          <ArrowRight size={24} className="text-slate-300 rotate-90 md:rotate-0 shrink-0" />
+          <div className="flex-1 w-full bg-slate-50 border border-slate-200 p-5 rounded-2xl shadow-sm">
+            <div className="w-12 h-12 rounded-full bg-cyan-100 flex items-center justify-center mx-auto mb-3">
+              <Wifi size={24} className="text-cyan-600" />
+            </div>
+            <p className="font-black text-sm text-slate-900">Substations (30)</p>
+            <p className="text-xs font-medium text-slate-500 mt-1">Data Aggregation</p>
+            <p className="text-[10px] font-bold text-cyan-700 mt-3 font-mono bg-cyan-100 border border-cyan-200 inline-block px-2.5 py-1 rounded-md shadow-sm">LoRa 868MHz</p>
           </div>
-          <ArrowRight size={24} className="text-slate-600 rotate-90 md:rotate-0" />
-          <div className="flex-1 w-full bg-surface-900 border border-surface-700 p-4 rounded-xl border-t-4 border-t-brand-500">
-            <Server size={24} className="text-brand-400 mx-auto mb-2" />
-            <p className="font-bold text-sm text-white">Master Stations (3)</p>
-            <p className="text-[10px] text-slate-500">Edge Processing</p>
-            <p className="text-[10px] text-slate-500 mt-2 font-mono">Correlated Risk Engine</p>
+          <ArrowRight size={24} className="text-slate-300 rotate-90 md:rotate-0 shrink-0" />
+          <div className="flex-1 w-full bg-slate-50 border border-slate-200 p-5 rounded-2xl shadow-sm border-t-4 border-t-brand-500">
+            <div className="w-12 h-12 rounded-full bg-brand-100 flex items-center justify-center mx-auto mb-3">
+              <Server size={24} className="text-brand-600" />
+            </div>
+            <p className="font-black text-sm text-slate-900">Master Stations (3)</p>
+            <p className="text-xs font-medium text-slate-500 mt-1">Edge Processing</p>
+            <p className="text-[10px] font-bold text-slate-400 mt-3 font-mono bg-white border border-slate-200 inline-block px-2.5 py-1 rounded-md shadow-sm">Correlated Risk Engine</p>
           </div>
-          <ArrowRight size={24} className="text-slate-600 rotate-90 md:rotate-0" />
-          <div className="flex-1 w-full bg-surface-900 border border-surface-700 p-4 rounded-xl">
-            <Radio size={24} className="text-red-400 mx-auto mb-2" />
-            <p className="font-bold text-sm text-white">Alerting System</p>
-            <p className="text-[10px] text-slate-500">Danger Zones</p>
-            <p className="text-[10px] text-slate-500 mt-2 font-mono">NDMA / SDRF</p>
+          <ArrowRight size={24} className="text-slate-300 rotate-90 md:rotate-0 shrink-0" />
+          <div className="flex-1 w-full bg-slate-50 border border-slate-200 p-5 rounded-2xl shadow-sm">
+            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-3">
+              <Radio size={24} className="text-red-600" />
+            </div>
+            <p className="font-black text-sm text-slate-900">Alerting System</p>
+            <p className="text-xs font-medium text-slate-500 mt-1">Danger Zones</p>
+            <p className="text-[10px] font-bold text-slate-400 mt-3 font-mono bg-white border border-slate-200 inline-block px-2.5 py-1 rounded-md shadow-sm">NDMA / SDRF</p>
           </div>
         </div>
       </Card>

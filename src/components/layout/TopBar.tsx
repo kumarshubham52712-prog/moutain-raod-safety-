@@ -25,35 +25,35 @@ export function TopBar() {
   const now = format(new Date(), 'dd MMM yyyy, HH:mm:ss');
 
   return (
-    <header className="h-14 shrink-0 bg-surface-900/80 backdrop-blur border-b border-surface-700 flex items-center px-6 gap-4 sticky top-0 z-10">
+    <header className="h-16 shrink-0 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center px-8 gap-6 sticky top-0 z-10 shadow-sm">
       {/* Page title */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-2">
-          <h1 className="text-base font-bold text-white truncate">{pageInfo.title}</h1>
-          <span className="hidden md:inline text-xs text-slate-500">/ {pageInfo.subtitle}</span>
+        <div className="flex flex-col">
+          <h1 className="text-lg font-black text-slate-900 truncate tracking-tight">{pageInfo.title}</h1>
+          <span className="hidden md:inline text-[10px] font-bold text-slate-400 uppercase tracking-widest">{pageInfo.subtitle}</span>
         </div>
       </div>
 
       {/* Time */}
-      <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-500">
-        <Clock size={12} />
+      <div className="hidden lg:flex items-center gap-2 text-xs font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+        <Clock size={14} className="text-brand-500" />
         <span className="font-mono">{now}</span>
       </div>
 
       {/* Last update */}
-      <div className="hidden md:flex items-center gap-1.5 text-xs text-slate-600">
-        <RefreshCw size={11} />
+      <div className="hidden md:flex items-center gap-2 text-xs font-bold text-slate-400">
+        <RefreshCw size={12} className={systemStatus.lastUpdated ? "animate-spin-slow text-brand-400" : ""} />
         <span>Last: {format(new Date(systemStatus.lastUpdated), 'HH:mm:ss')}</span>
       </div>
 
       {/* Alert bell */}
       <button
-        className="relative p-2 rounded-lg hover:bg-surface-700 text-slate-400 hover:text-white transition-colors"
+        className="relative p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-colors border border-transparent hover:border-slate-200"
         title="Unacknowledged alerts"
       >
-        <Bell size={16} />
+        <Bell size={18} />
         {unackCritical > 0 && (
-          <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-risk-critical animate-ping-slow" />
+          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-red-500 animate-ping shadow-sm" />
         )}
       </button>
     </header>

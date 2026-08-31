@@ -30,7 +30,7 @@ export default function DangerZones() {
         <select
           value={selectedMaster}
           onChange={(e) => setSelectedMaster(e.target.value)}
-          className="px-3 py-2 rounded-lg bg-surface-800 border border-surface-600 text-sm text-white focus:border-brand-500 focus:outline-none"
+          className="px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm font-medium text-slate-700 focus:border-brand-500 focus:outline-none shadow-sm"
         >
           <option value="ALL">All Master Stations</option>
           {masterStations.map(m => (
@@ -40,16 +40,16 @@ export default function DangerZones() {
 
         <button
           onClick={clearDangerZoneHistory}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold hover:bg-red-500/20 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs font-semibold hover:bg-red-100 transition-colors shadow-sm"
         >
           <Trash2 size={12} /> Clear History
         </button>
       </SectionHeader>
 
       {sortedZones.length === 0 && (
-        <div className="text-center py-16 text-slate-500">
-          <ShieldAlert size={48} className="mx-auto mb-4 opacity-30" />
-          <p className="text-lg font-semibold">No Active Danger Zones</p>
+        <div className="text-center py-20 text-slate-400">
+          <ShieldAlert size={56} className="mx-auto mb-4 opacity-30 text-slate-300" />
+          <p className="text-xl font-bold text-slate-500">No Active Danger Zones</p>
           <p className="text-sm mt-1">All monitoring zones are within normal parameters.</p>
         </div>
       )}
@@ -63,70 +63,70 @@ export default function DangerZones() {
             <Card
               key={zone.id}
               className={clsx(
-                'p-5 transition-all relative overflow-hidden',
-                isCritical ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''
+                'p-6 transition-all relative overflow-hidden group hover:shadow-md',
+                isCritical ? 'border-red-500/30 shadow-sm' : ''
               )}
             >
               {isCritical && (
                 <div className="absolute top-0 left-0 w-full h-1 bg-red-500 animate-pulse" />
               )}
 
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between mb-5">
                 <div className="flex items-center gap-3">
                   <div
                     className={clsx(
-                      'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border',
-                      isCritical ? 'bg-red-500/20 text-red-500 border-red-500/50' : 'bg-surface-700 text-slate-400 border-surface-600'
+                      'w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border shadow-sm',
+                      isCritical ? 'bg-red-50 text-red-600 border-red-200' : 'bg-slate-50 text-slate-500 border-slate-200'
                     )}
                   >
-                    {isCritical ? <ShieldAlert size={20} /> : <AlertTriangle size={20} />}
+                    {isCritical ? <ShieldAlert size={24} /> : <AlertTriangle size={24} />}
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-white leading-tight">{zone.id}</h3>
+                    <h3 className="text-lg font-black text-slate-900 leading-tight mb-1">{zone.id}</h3>
                     <StatusBadge level={zone.riskLevel} size="xs" />
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-black font-mono leading-none" style={{ color: cfg.color }}>
+                  <p className="text-3xl font-black font-mono leading-none" style={{ color: cfg.color }}>
                     {zone.riskScore}
                   </p>
                   <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Risk Score</p>
                 </div>
               </div>
 
-              <p className="text-sm text-white font-medium mb-1">{zone.name}</p>
-              <p className="text-xs text-slate-400 mb-4 h-10 line-clamp-2">{zone.description}</p>
+              <p className="text-sm font-bold text-slate-700 mb-1">{zone.name}</p>
+              <p className="text-xs font-medium text-slate-500 mb-5 h-10 line-clamp-2">{zone.description}</p>
 
-              <div className="space-y-2 mb-4 bg-surface-900/50 p-3 rounded-lg border border-surface-700">
+              <div className="space-y-2.5 mb-5 bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-inner">
                 <div className="flex justify-between text-xs">
-                  <span className="text-slate-500 flex items-center gap-1.5"><Layers size={12} /> Master Station</span>
-                  <Link to={`/master-stations/${zone.masterStationId}`} className="font-mono text-cyan-400 hover:underline">
+                  <span className="text-slate-500 font-medium flex items-center gap-1.5"><Layers size={12} /> Master Station</span>
+                  <Link to={`/master-stations/${zone.masterStationId}`} className="font-mono font-bold text-brand-600 hover:underline">
                     {zone.masterStationId}
                   </Link>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-slate-500 flex items-center gap-1.5"><Navigation size={12} /> Coordinates</span>
-                  <span className="font-mono text-slate-300">{zone.latitude.toFixed(4)}, {zone.longitude.toFixed(4)}</span>
+                  <span className="text-slate-500 font-medium flex items-center gap-1.5"><Navigation size={12} /> Coordinates</span>
+                  <span className="font-mono font-medium text-slate-700">{zone.latitude.toFixed(4)}, {zone.longitude.toFixed(4)}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-slate-500 flex items-center gap-1.5"><Map size={12} /> Radius</span>
-                  <span className="font-mono text-slate-300">{zone.radius}m</span>
+                  <span className="text-slate-500 font-medium flex items-center gap-1.5"><Map size={12} /> Radius</span>
+                  <span className="font-mono font-medium text-slate-700">{zone.radius}m</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-slate-500 flex items-center gap-1.5"><AlertTriangle size={12} /> Abnormal Sensors</span>
-                  <span className={clsx('font-mono font-bold', zone.abnormalSensorCount > 0 ? 'text-red-400' : 'text-slate-300')}>
+                  <span className="text-slate-500 font-medium flex items-center gap-1.5"><AlertTriangle size={12} /> Abnormal Sensors</span>
+                  <span className={clsx('font-mono font-bold', zone.abnormalSensorCount > 0 ? 'text-red-600' : 'text-slate-700')}>
                     {zone.abnormalSensorCount} / {zone.triggeringSensorIds.length}
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between mt-auto">
-                <span className="text-[10px] text-slate-500">
+              <div className="flex items-center justify-between mt-auto pt-2 border-t border-slate-100">
+                <span className="text-[10px] font-medium text-slate-400">
                   Updated: {format(new Date(zone.lastUpdated), 'HH:mm:ss')}
                 </span>
                 <span className={clsx(
-                  'text-[10px] font-bold px-2 py-1 rounded',
-                  zone.status === 'ACTIVE' ? 'bg-red-500/20 text-red-400' : 'bg-surface-700 text-slate-400'
+                  'text-[10px] font-bold px-2.5 py-1 rounded-md shadow-sm',
+                  zone.status === 'ACTIVE' ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-slate-100 text-slate-600 border border-slate-200'
                 )}>
                   {zone.status === 'ACTIVE' ? '● ACTIVE ZONE' : '○ MONITORING'}
                 </span>

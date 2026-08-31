@@ -45,17 +45,17 @@ export default function MasterStationDetail() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-xs text-slate-500">
-          <Link to="/master-stations" className="hover:text-slate-300 transition-colors">Master Stations</Link>
+        <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+          <Link to="/master-stations" className="hover:text-slate-900 transition-colors">Master Stations</Link>
           <ChevronRight size={12} />
-          <span className="text-white font-semibold">{master.id}</span>
+          <span className="text-slate-900 font-bold">{master.id}</span>
         </div>
         
         <button
           onClick={playScenario}
-          className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-brand-600 to-cyan-600 hover:from-brand-500 hover:to-cyan-500 text-white font-black text-sm rounded-lg border border-cyan-400/30 shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all"
+          className="flex items-center gap-2 px-6 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm rounded-xl shadow-md transition-all hover:-translate-y-0.5"
         >
           <Play size={16} />
           PROCESS SIMULATION TICK
@@ -63,43 +63,46 @@ export default function MasterStationDetail() {
       </div>
 
       {/* Header */}
-      <Card className="p-6">
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div className="flex items-center gap-4">
+      <Card className="p-6 md:p-8">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
+          <div className="flex items-center gap-5">
             <div
-              className="w-16 h-16 rounded-xl flex items-center justify-center border-2"
-              style={{ borderColor: rCfg.color, background: rCfg.bgColor }}
+              className="w-16 h-16 rounded-2xl flex items-center justify-center border shrink-0 shadow-sm"
+              style={{ borderColor: rCfg.borderColor, background: rCfg.bgColor }}
             >
               <Server size={28} style={{ color: rCfg.color }} />
             </div>
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <h2 className="text-xl font-bold font-mono text-white">{master.id}</h2>
+                <h2 className="text-2xl font-black font-mono text-slate-900 tracking-tight">{master.id}</h2>
                 <StatusBadge level={master.riskLevel} />
                 <CommBadge status={master.communicationStatus} />
               </div>
-              <p className="text-sm text-slate-400">{master.name}</p>
-              <p className="text-xs text-slate-600">{master.location}</p>
-              <div className="flex items-center gap-3 mt-1">
-                <span className="flex items-center gap-1 text-xs text-slate-500">
-                  <MapPin size={10} />
+              <p className="text-sm font-medium text-slate-500 mb-1">{master.name}</p>
+              <p className="text-xs text-slate-400 mb-2">{master.location}</p>
+              <div className="flex items-center gap-3 mt-2">
+                <span className="flex items-center gap-1.5 text-xs text-slate-600 bg-slate-50 border border-slate-100 px-2.5 py-1 rounded-md">
+                  <MapPin size={10} className="text-brand-500" />
                   {master.latitude.toFixed(4)}°N, {master.longitude.toFixed(4)}°E
+                  <button onClick={copyCoords} className="text-slate-400 hover:text-slate-900 transition-colors ml-1" title="Copy coordinates">
+                    <Copy size={12} />
+                  </button>
                 </span>
-                <button onClick={copyCoords} className="text-slate-600 hover:text-slate-400 transition-colors" title="Copy coordinates">
-                  <Copy size={10} />
-                </button>
-                <span className="text-[10px] text-slate-600 italic">DEMO coordinates</span>
+                <span className="text-[10px] font-medium text-slate-400 italic">DEMO coordinates</span>
               </div>
             </div>
           </div>
-          <div className="ml-auto">
-            <RiskGauge score={master.aggregatedRiskScore} size={100} />
+          <div className="ml-auto flex items-center gap-6 bg-slate-50 p-5 rounded-2xl border border-slate-100 shadow-sm">
+             <div className="text-center pr-2">
+              <RiskGauge score={master.aggregatedRiskScore} size={90} />
+              <p className="text-[10px] text-slate-500 mt-2 font-bold tracking-widest uppercase">Aggregated Risk</p>
+            </div>
           </div>
         </div>
       </Card>
 
       {/* KPI Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4">
         {[
           { label: 'Total Sensors',   value: masterSensors.length },
           { label: 'Online Sensors',  value: master.onlineSensors },
@@ -108,17 +111,17 @@ export default function MasterStationDetail() {
           { label: 'Critical',        value: master.criticalSensors },
           { label: 'Active Alerts',   value: masterAlerts.length },
         ].map(kpi => (
-          <Card key={kpi.label} className="p-3 text-center">
-            <p className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">{kpi.label}</p>
-            <p className="text-xl font-bold font-mono text-white">{kpi.value}</p>
+          <Card key={kpi.label} className="p-4 text-center hover:shadow-md transition-shadow">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">{kpi.label}</p>
+            <p className="text-2xl font-black font-mono text-slate-900">{kpi.value}</p>
           </Card>
         ))}
       </div>
 
       {/* Network & Performance */}
-      <Card className="p-4">
+      <Card className="p-6">
         <SectionHeader title="Network & Performance" subtitle="LoRa mesh and data throughput" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-x-8 gap-y-2 mb-6">
           <MetricRow label="LoRa Health"       value={master.loraNetworkHealth}         unit="%" highlight />
           <MetricRow label="Data Rate"         value={master.dataRate}                  unit=" Mbps" />
           <MetricRow label="Uptime"            value={master.uptime}                   unit="%" highlight />
@@ -128,36 +131,36 @@ export default function MasterStationDetail() {
           <MetricRow label="Edge Connection"   value={master.edgeConnectionStatus} />
           <MetricRow label="Risk Score"        value={`${master.aggregatedRiskScore}/100`} highlight />
         </div>
-        <ProgressBar value={master.loraNetworkHealth} label="Network Health" color="#06b6d4" />
+        <ProgressBar value={master.loraNetworkHealth} label="Network Health" color="#0ea5e9" />
       </Card>
 
       {/* Substation Status Summary */}
-      <Card className="p-4">
+      <Card className="p-6">
         <SectionHeader title="Substation Status Distribution" subtitle={`${masterSubs.length} connected substations`} />
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-4">
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-4 mb-2">
           {[
-            { label: 'Normal', count: subsByRisk.normal, color: '#22c55e' },
-            { label: 'Watch', count: subsByRisk.watch, color: '#3b82f6' },
-            { label: 'Warning', count: subsByRisk.warning, color: '#eab308' },
-            { label: 'High Risk', count: subsByRisk.highRisk, color: '#f97316' },
-            { label: 'Critical', count: subsByRisk.critical, color: '#ef4444' },
-            { label: 'Offline', count: subsByRisk.offline, color: '#64748b' },
+            { label: 'Normal', count: subsByRisk.normal, color: '#16a34a', bg: '#dcfce7', border: '#bbf7d0' },
+            { label: 'Watch', count: subsByRisk.watch, color: '#2563eb', bg: '#dbeafe', border: '#bfdbfe' },
+            { label: 'Warning', count: subsByRisk.warning, color: '#ca8a04', bg: '#fef9c3', border: '#fef08a' },
+            { label: 'High Risk', count: subsByRisk.highRisk, color: '#ea580c', bg: '#ffedd5', border: '#fed7aa' },
+            { label: 'Critical', count: subsByRisk.critical, color: '#dc2626', bg: '#fee2e2', border: '#fecaca' },
+            { label: 'Offline', count: subsByRisk.offline, color: '#475569', bg: '#f1f5f9', border: '#e2e8f0' },
           ].map(item => (
-            <div key={item.label} className="text-center p-2 rounded-lg bg-surface-900 border border-surface-700">
-              <p className="text-xl font-bold font-mono" style={{ color: item.color }}>{item.count}</p>
-              <p className="text-[10px] text-slate-500">{item.label}</p>
+            <div key={item.label} className="text-center py-4 rounded-xl border" style={{ backgroundColor: item.bg, borderColor: item.border }}>
+              <p className="text-2xl font-black font-mono mb-0.5" style={{ color: item.color }}>{item.count}</p>
+              <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">{item.label}</p>
             </div>
           ))}
         </div>
       </Card>
 
       {/* Local Master Monitoring (Master's own sensors) */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         <SectionHeader 
           title="Local Master Monitoring" 
           subtitle="Sensors directly attached to this master station" 
         />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6">
           {sensors.filter(s => s.substationId === master.id).map(sensor => {
             const typeCfg = getSensorTypeConfig(sensor.type);
             const sRisk = getRiskLevelConfig(sensor.riskLevel);
@@ -165,34 +168,34 @@ export default function MasterStationDetail() {
             const targetVal = sensor.targetValue ?? sensor.currentValue;
 
             return (
-              <Card key={sensor.id} className="p-5 flex flex-col gap-4 border-surface-600 bg-surface-800 shadow-lg relative overflow-hidden group hover:border-surface-500 transition-colors">
+              <Card key={sensor.id} className="p-6 flex flex-col gap-4 relative overflow-hidden group hover:shadow-md transition-shadow">
                 {sensor.riskLevel === 'CRITICAL' && (
-                  <div className="absolute inset-0 border-2 border-red-500/50 rounded-xl animate-pulse-slow pointer-events-none" />
+                  <div className="absolute inset-0 border-2 border-red-500/20 rounded-xl animate-pulse-slow pointer-events-none" />
                 )}
                 
                 <div className="flex justify-between items-start relative z-10">
                   <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-lg shadow-inner" style={{ background: `${typeCfg.color}20` }}>
-                      <IconComp size={18} style={{ color: typeCfg.color }} />
+                    <div className="p-2.5 rounded-xl shadow-sm border border-slate-100" style={{ background: sRisk.bgColor }}>
+                      <IconComp size={20} style={{ color: sRisk.color }} />
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-0.5">
-                        <h3 className="font-bold text-white tracking-tight">{sensor.type}</h3>
-                        <span className="text-[10px] text-slate-500 font-mono bg-surface-900 px-1.5 py-0.5 rounded">{sensor.id}</span>
+                        <h3 className="font-bold text-slate-900 tracking-tight">{sensor.type}</h3>
+                        <span className="text-[10px] text-slate-600 font-mono font-bold bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded-md">{sensor.id}</span>
                       </div>
-                      <p className="text-[10px] text-slate-400 line-clamp-1">{typeCfg.measurementDescription}</p>
+                      <p className="text-xs font-medium text-slate-500 line-clamp-1">{typeCfg.measurementDescription}</p>
                     </div>
                   </div>
                   <StatusBadge level={sensor.riskLevel} size="xs" />
                 </div>
 
-                <div className="text-center py-4 bg-surface-900/80 rounded-xl border border-surface-700 shadow-inner relative z-10 mt-2">
-                  <div className="text-3xl font-black font-mono tracking-tight transition-colors duration-300" style={{ color: sRisk.color }}>
+                <div className="text-center py-5 bg-slate-50 rounded-xl border border-slate-100 shadow-sm relative z-10 mt-2">
+                  <div className="text-4xl font-black font-mono tracking-tight transition-colors duration-300" style={{ color: sRisk.color }}>
                     {sensor.currentValue.toFixed(2)} <span className="text-sm font-bold text-slate-500 ml-1">{typeCfg.unit}</span>
                   </div>
                 </div>
 
-                <div className="mt-4 relative z-10 bg-surface-900/50 p-2 rounded-xl border border-surface-700">
+                <div className="mt-4 relative z-10 bg-white p-3 rounded-xl border border-surface-750">
                   <TimeSeriesChart
                     readings={sensor.history}
                     color={typeCfg.color}
@@ -205,27 +208,27 @@ export default function MasterStationDetail() {
                 </div>
 
                 <div className="space-y-3 mt-4 relative z-10">
-                  <div className="flex justify-between text-[11px] font-bold tracking-widest text-slate-400 mb-2 uppercase">
+                  <div className="flex justify-between text-[11px] font-bold tracking-widest text-slate-500 mb-2 uppercase">
                     <span>Simulated Value</span>
-                    <button onClick={() => setSensorTargetValue(sensor.id, typeCfg.normalMax * 0.5)} className="text-brand-400 hover:text-brand-300 transition-colors">Reset Normal</button>
+                    <button onClick={() => setSensorTargetValue(sensor.id, typeCfg.normalMax * 0.5)} className="text-brand-600 hover:text-brand-500 transition-colors">Reset Normal</button>
                   </div>
                   <input 
                     type="range" min={0} max={typeCfg.criticalThreshold * 1.5} step={typeCfg.criticalThreshold * 0.01}
                     value={targetVal}
                     onChange={(e) => setSensorTargetValue(sensor.id, parseFloat(e.target.value))}
-                    className="w-full h-2 bg-surface-900 rounded-lg appearance-none cursor-pointer accent-brand-500 border border-surface-700"
+                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-600"
                   />
-                  <div className="flex justify-between text-[10px] font-mono text-slate-500 mt-2">
+                  <div className="flex justify-between text-[10px] font-mono font-bold text-slate-400 mt-2">
                     <span>0</span>
-                    <span className="text-yellow-500 border-l border-yellow-500/50 pl-1">W: {typeCfg.warningThreshold}</span>
-                    <span className="text-red-500 border-l border-red-500/50 pl-1">C: {typeCfg.criticalThreshold}</span>
+                    <span className="text-yellow-600 border-l border-yellow-200 pl-1">W: {typeCfg.warningThreshold}</span>
+                    <span className="text-red-500 border-l border-red-200 pl-1">C: {typeCfg.criticalThreshold}</span>
                     <span>Max</span>
                   </div>
                 </div>
 
                 <div className="flex gap-2 mt-2 relative z-10">
-                  <button onClick={() => setSensorTargetValue(sensor.id, targetVal - typeCfg.criticalThreshold*0.05)} className="flex-1 py-2 bg-surface-700/50 hover:bg-surface-600 rounded-lg font-bold text-slate-300 border border-surface-600 transition-colors shadow-sm">-</button>
-                  <button onClick={() => setSensorTargetValue(sensor.id, targetVal + typeCfg.criticalThreshold*0.05)} className="flex-1 py-2 bg-surface-700/50 hover:bg-surface-600 rounded-lg font-bold text-slate-300 border border-surface-600 transition-colors shadow-sm">+</button>
+                  <button onClick={() => setSensorTargetValue(sensor.id, targetVal - typeCfg.criticalThreshold*0.05)} className="flex-1 py-2 bg-slate-50 hover:bg-slate-100 rounded-lg font-bold text-slate-600 border border-slate-200 transition-colors shadow-sm">-</button>
+                  <button onClick={() => setSensorTargetValue(sensor.id, targetVal + typeCfg.criticalThreshold*0.05)} className="flex-1 py-2 bg-slate-50 hover:bg-slate-100 rounded-lg font-bold text-slate-600 border border-slate-200 transition-colors shadow-sm">+</button>
                 </div>
               </Card>
             );
@@ -234,12 +237,12 @@ export default function MasterStationDetail() {
       </div>
 
       {/* Connected Substations */}
-      <Card className="p-4">
+      <Card className="p-6">
         <SectionHeader
           title="Connected Substations"
           subtitle={`${masterSubs.length} edge stations reporting to ${master.id}`}
         />
-        <div className="space-y-2">
+        <div className="space-y-3">
           {masterSubs.slice().sort((a, b) => b.riskScore - a.riskScore).map(sub => {
             const sCfg = getRiskLevelConfig(sub.riskLevel);
             const subSensors = sensors.filter(s => sub.sensorIds.includes(s.id));
@@ -247,26 +250,26 @@ export default function MasterStationDetail() {
               <Link
                 key={sub.id}
                 to={`/substations/${sub.id}`}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg border bg-surface-900/60 hover:bg-surface-700/50 transition-all hover:scale-[1.005] group"
+                className="flex items-center gap-4 px-5 py-4 rounded-xl border bg-white hover:shadow-md transition-all group"
                 style={{ borderColor: sCfg.borderColor }}
               >
-                <div className="w-2.5 h-2.5 rounded-full shrink-0"
+                <div className="w-3 h-3 rounded-full shrink-0 shadow-sm"
                   style={{ background: sCfg.color,
-                    boxShadow: sub.riskLevel !== 'NORMAL' ? `0 0 8px ${sCfg.color}` : 'none' }} />
+                    boxShadow: sub.riskLevel !== 'NORMAL' ? `0 0 10px ${sCfg.color}80` : 'none' }} />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold font-mono text-white">{sub.id}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-base font-black font-mono text-slate-900">{sub.id}</span>
                     <StatusBadge level={sub.riskLevel} size="xs" showDot={false} />
                     <CommBadge status={sub.communicationStatus} />
                   </div>
-                  <p className="text-[10px] text-slate-500 truncate mt-0.5">
+                  <p className="text-xs font-medium text-slate-500 truncate mt-1.5">
                     {subSensors.length} sensors · Signal {sub.loraSignal}% · Battery {sub.batteryLevel.toFixed(0)}%
                   </p>
                 </div>
-                <span className="text-sm font-mono font-bold" style={{ color: sCfg.color }}>
+                <span className="text-lg font-mono font-black" style={{ color: sCfg.color }}>
                   {sub.riskScore}
                 </span>
-                <ChevronRight size={14} className="text-slate-600 group-hover:text-slate-400 transition-colors" />
+                <ChevronRight size={16} className="text-slate-400 group-hover:text-brand-600 transition-colors ml-2" />
               </Link>
             );
           })}

@@ -8,6 +8,7 @@ import { simulationTick, getEnvState } from '../services/simulationEngine';
 import { acknowledgeAlert, resolveAlert } from '../services/alertService';
 import { getRiskLevelFromScore }        from '../config/thresholds';
 import { calculateZoneRiskScore }       from '../services/riskEngine';
+import { SENSOR_TYPE_CONFIGS }          from '../config/sensorTypes';
 import type { EnvState }               from '../services/simulationEngine';
 
 // ── Store State Interface ─────────────────────────────────────
@@ -297,22 +298,49 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
 
     setSensorTargetValue: (sensorId: string, targetValue: number) => {
       const state = get();
+      const ts = new Date().toISOString();
       const sensors = state.sensors.map(s => {
         if (s.id !== sensorId) return s;
-        return { ...s, targetValue };
+        
+        const cfg = SENSOR_TYPE_CONFIGS[s.type];
+        let riskLevel: Sensor['riskLevel'] = 'NORMAL';
+        if (cfg) {
+          if (targetValue >= cfg.criticalThreshold)  riskLevel = 'CRITICAL';
+          else if (targetValue >= cfg.highRiskThreshold)  riskLevel = 'HIGH_RISK';
+          else if (targetValue >= cfg.warningThreshold)   riskLevel = 'WARNING';
+          else if (targetValue >= cfg.normalMax * 0.8)    riskLevel = 'WATCH';
+        }
+        
+        const newHistory = [...s.history, { timestamp: ts, value: targetValue }].slice(-50);
+        
+        return { 
+          ...s, 
+          targetValue, 
+          currentValue: targetValue,
+          riskLevel,
+          isAbnormal: riskLevel !== 'NORMAL' && riskLevel !== 'WATCH',
+          history: newHistory,
+          timestamp: ts
+        };
       });
       
       const event: EventLog = {
         id: genEventId(),
-        timestamp: new Date().toISOString(),
+        timestamp: ts,
         eventType: 'MANUAL_OVERRIDE',
         source: sensorId,
-        message: `Manual Override: Target set to ${targetValue}`,
+        message: `Manual Override: Instant reading updated to ${targetValue}`,
         severity: 'INFO',
       };
 
+      const propagated = propagateChanges(sensors, state.substations, state.masterStations, state.dangerZones);
+
       set({
         sensors,
+        substations: propagated.substations,
+        masterStations: propagated.masterStations,
+        dangerZones: propagated.dangerZones,
+        systemStatus: computeSystemStatus(sensors, propagated.substations, propagated.masterStations, state.alerts),
         eventLog: [event, ...state.eventLog].slice(0, 300)
       });
     },
@@ -450,7 +478,7 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
     // ── Clear History ────────────────────────────────────────
 
     clearAlertHistory: () => {
-      set(state => ({ alerts: state.alerts.filter(a => !a.resolved) }));
+      set({ alerts: [] });
     },
     clearDangerZoneHistory: () => {
       set(state => ({

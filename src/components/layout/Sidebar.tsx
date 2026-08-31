@@ -26,8 +26,8 @@ const NavSection = ({ title, items }: { title: string; items: NavItem[] }) => (
         className={({ isActive }) => clsx(
           'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 group mb-0.5',
           isActive
-            ? 'bg-brand-600/20 text-brand-400 border border-brand-600/30'
-            : 'text-slate-400 hover:text-slate-200 hover:bg-surface-700',
+            ? 'bg-brand-50 text-brand-600 border border-brand-100 shadow-sm'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-surface-800 hover:shadow-sm',
         )}
       >
         <span className="w-4 h-4 shrink-0">{item.icon}</span>
@@ -52,6 +52,8 @@ export function Sidebar() {
     { path: '/substations',   label: 'Substations',      icon: <Wifi size={16} /> },
     { path: '/map',           label: 'Live Map',         icon: <Map size={16} /> },
     { path: '/dataflow',      label: 'Data Flow',        icon: <Radio size={16} /> },
+    { path: '/topology',      label: 'Topology',         icon: <Network size={16} /> },
+    { path: '/analytics',     label: 'Analytics',        icon: <Activity size={16} /> },
   ];
 
   const riskItems: NavItem[] = [
@@ -67,50 +69,50 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className="flex flex-col w-64 shrink-0 bg-surface-900 border-r border-surface-700 h-screen sticky top-0 overflow-y-auto">
+    <aside className="flex flex-col w-64 shrink-0 bg-white border-r border-slate-200 h-screen sticky top-0 overflow-y-auto shadow-sm">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-surface-700">
-        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-brand-600 to-brand-800 shadow-glow-blue">
+      <div className="flex items-center gap-3 px-6 py-6 border-b border-slate-100">
+        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 shadow-md">
           <Mountain size={20} className="text-white" />
         </div>
         <div>
-          <p className="text-sm font-bold text-white leading-tight">MountainWatch</p>
-          <p className="text-[10px] text-slate-500 leading-tight">Dehradun, Uttarakhand</p>
+          <p className="text-base font-black text-slate-900 tracking-tight">MountainWatch</p>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Uttarakhand</p>
         </div>
       </div>
 
       {/* Overall Risk Pill */}
       <div
-        className="mx-3 mt-3 mb-1 px-3 py-2 rounded-lg border text-xs font-semibold flex items-center gap-2"
-        style={{ background: riskCfg.bgColor, borderColor: riskCfg.borderColor, color: riskCfg.textColor }}
+        className="mx-4 mt-4 mb-2 px-3 py-2.5 rounded-xl border-2 text-xs font-bold flex items-center gap-2 shadow-sm"
+        style={{ background: riskCfg.bgColor || 'white', borderColor: riskCfg.borderColor, color: riskCfg.color }}
       >
-        <span className="w-2 h-2 rounded-full animate-pulse-slow" style={{ background: riskCfg.color }} />
-        <span>System Risk: {riskCfg.label}</span>
-        <ChevronRight size={12} className="ml-auto opacity-50" />
+        <span className="w-2.5 h-2.5 rounded-full animate-pulse-slow shadow-sm" style={{ background: riskCfg.color }} />
+        <span className="uppercase tracking-widest text-[10px]">Risk: {riskCfg.label}</span>
+        <ChevronRight size={14} className="ml-auto opacity-50" />
       </div>
 
       {/* Sim indicator */}
       {simulation.isRunning && (
-        <div className="mx-3 mb-2 px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 text-[10px] font-medium flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-ping-slow" />
-          Simulation Running — Tick #{simulation.tick}
+        <div className="mx-4 mb-3 px-3 py-2 rounded-xl bg-green-50 border-2 border-green-200 text-green-700 text-[10px] font-bold flex items-center gap-2 shadow-sm uppercase tracking-widest">
+          <span className="w-2 h-2 rounded-full bg-green-500 animate-ping shadow-sm" />
+          Sim: Tick #{simulation.tick}
         </div>
       )}
 
       {/* Nav */}
-      <nav className="flex-1 px-2 py-3 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 overflow-y-auto">
         <NavSection title="Monitoring"      items={monitoringItems} />
         <NavSection title="Risk & Alerts"   items={riskItems} />
         <NavSection title="Tools"           items={toolItems} />
       </nav>
 
       {/* Footer */}
-      <div className="px-3 py-3 border-t border-surface-700 text-[10px] text-slate-600">
-        <div className="flex items-center gap-2 mb-1">
-          <Cpu size={10} />
-          <span>Edge AI Engine v2.4.1</span>
+      <div className="px-6 py-4 border-t border-slate-100 text-[10px] text-slate-400 font-bold uppercase tracking-widest bg-slate-50">
+        <div className="flex items-center gap-2 mb-1.5 text-slate-500">
+          <Cpu size={12} />
+          <span>Edge AI v2.4.1</span>
         </div>
-        <div>NDMA / SDRF Field System</div>
+        <div>NDMA / SDRF System</div>
       </div>
     </aside>
   );

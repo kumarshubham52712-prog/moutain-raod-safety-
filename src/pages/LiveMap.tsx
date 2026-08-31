@@ -38,38 +38,38 @@ export default function LiveMap() {
       {/* Controls */}
       <div className="flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3 flex-wrap">
-          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Map Layers:</p>
+          <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Map Layers:</p>
           {layerButtons.map(btn => (
             <button
               key={btn.key}
               onClick={() => toggleLayer(btn.key)}
               className={clsx(
-                'px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all',
-                activeLayers.has(btn.key) ? 'opacity-100' : 'opacity-40 hover:opacity-60',
+                'px-4 py-2 rounded-xl text-xs font-bold border transition-all shadow-sm',
+                activeLayers.has(btn.key) ? 'opacity-100' : 'opacity-50 hover:opacity-70 bg-white',
               )}
               style={{
-                borderColor: btn.color,
-                background:  activeLayers.has(btn.key) ? `${btn.color}20` : 'transparent',
-                color:       btn.color,
+                borderColor: activeLayers.has(btn.key) ? btn.color : '#e2e8f0',
+                background:  activeLayers.has(btn.key) ? `${btn.color}15` : 'white',
+                color:       activeLayers.has(btn.key) ? btn.color : '#64748b',
               }}
             >
               {btn.label}
             </button>
           ))}
         </div>
-        <p className="text-xs text-slate-500">Dehradun / Mussoorie / Rishikesh Region</p>
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest hidden sm:block">Dehradun / Mussoorie / Rishikesh</p>
       </div>
 
       {/* Map */}
-      <div className="rounded-xl overflow-hidden border border-surface-700 flex-1 relative z-0">
+      <div className="rounded-2xl overflow-hidden border border-slate-200 flex-1 relative z-0 shadow-sm bg-slate-50">
         <MapContainer
           center={REGION_CENTER}
           zoom={11}
           maxBounds={MAP_BOUNDS}
-          style={{ height: '100%', width: '100%', background: '#0d1630' }}
+          style={{ height: '100%', width: '100%', background: '#f8fafc' }}
           zoomControl={true}
         >
-          {/* High-resolution satellite basemap without dark filter */}
+          {/* High-resolution satellite basemap */}
           <TileLayer
             attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
             url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
@@ -99,27 +99,27 @@ export default function LiveMap() {
                 }}
               >
                 <Popup className="custom-popup">
-                  <div className="bg-surface-800 text-white p-3 rounded-lg min-w-52 text-xs border border-surface-600 shadow-2xl">
-                    <div className="flex items-center gap-2 mb-2">
+                  <div className="bg-white text-slate-900 p-4 rounded-xl min-w-52 text-xs border border-slate-200 shadow-xl">
+                    <div className="flex items-center gap-3 mb-2">
                       <StatusBadge level={zone.riskLevel} size="xs" />
-                      <span className="font-bold">{zone.id}</span>
+                      <span className="font-black font-mono">{zone.id}</span>
                     </div>
-                    <p className="font-semibold text-slate-200 mb-1">{zone.name}</p>
-                    <p className="text-slate-400 text-[10px] mb-2">{zone.description}</p>
-                    <div className="space-y-1">
-                      <div className="flex justify-between">
+                    <p className="font-bold text-slate-700 mb-1">{zone.name}</p>
+                    <p className="text-slate-500 text-[10px] mb-3 font-medium">{zone.description}</p>
+                    <div className="space-y-2 pt-2 border-t border-slate-100">
+                      <div className="flex justify-between font-medium">
                         <span className="text-slate-500">Master</span>
-                        <span className="font-mono text-cyan-400">{zone.masterStationId}</span>
+                        <span className="font-mono text-cyan-600 font-bold">{zone.masterStationId}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between font-medium">
                         <span className="text-slate-500">Risk Score</span>
-                        <span className="font-mono font-bold" style={{ color: cfg.color }}>
+                        <span className="font-mono font-black" style={{ color: cfg.color }}>
                           {zone.riskScore}/100
                         </span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between font-medium">
                         <span className="text-slate-500">Status</span>
-                        <span className="font-mono">{zone.status}</span>
+                        <span className="font-mono font-bold text-slate-700">{zone.status}</span>
                       </div>
                     </div>
                   </div>
@@ -145,30 +145,30 @@ export default function LiveMap() {
                 }}
               >
                 <Popup className="custom-popup">
-                  <div className="bg-surface-800 text-white p-3 rounded-lg min-w-48 text-xs shadow-2xl border border-surface-600">
-                    <div className="flex items-center gap-2 mb-2">
+                  <div className="bg-white text-slate-900 p-4 rounded-xl min-w-48 text-xs shadow-xl border border-slate-200">
+                    <div className="flex items-center gap-3 mb-3">
                       <StatusBadge level={sub.riskLevel} size="xs" />
-                      <Link to={`/substations/${sub.id}`} className="font-bold font-mono hover:text-brand-400 hover:underline">{sub.id}</Link>
+                      <Link to={`/substations/${sub.id}`} className="font-black font-mono hover:text-brand-600 hover:underline">{sub.id}</Link>
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-2 font-medium">
                       <div className="flex justify-between">
                         <span className="text-slate-500">Master</span>
-                        <span className="font-mono text-cyan-400">{sub.masterStationId}</span>
+                        <span className="font-mono text-cyan-600 font-bold">{sub.masterStationId}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-500">Sensors</span>
-                        <span className="font-mono">{sub.sensorIds.length}</span>
+                        <span className="font-mono font-bold text-slate-700">{sub.sensorIds.length}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-500">Risk</span>
-                        <span className="font-mono font-bold" style={{ color: cfg.color }}>{sub.riskScore}/100</span>
+                        <span className="font-mono font-black" style={{ color: cfg.color }}>{sub.riskScore}/100</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-500">Battery</span>
-                        <span className="font-mono">{sub.batteryLevel.toFixed(0)}%</span>
+                        <span className="font-mono font-bold text-slate-700">{sub.batteryLevel.toFixed(0)}%</span>
                       </div>
                     </div>
-                    <div className="mt-3">
+                    <div className="mt-4 pt-3 border-t border-slate-100">
                       <CommBadge status={sub.communicationStatus} />
                     </div>
                   </div>
@@ -197,25 +197,25 @@ export default function LiveMap() {
                 }}
               >
                 <Popup className="custom-popup">
-                  <div className="bg-surface-800 text-white p-3 rounded-lg min-w-52 text-xs shadow-2xl border border-surface-600">
-                    <div className="flex items-center gap-2 mb-2">
+                  <div className="bg-white text-slate-900 p-4 rounded-xl min-w-52 text-xs shadow-xl border border-slate-200">
+                    <div className="flex items-center gap-3 mb-2">
                       <StatusBadge level={sensor.riskLevel} size="xs" />
-                      <Link to={`/sensors/${sensor.id}`} className="font-bold font-mono hover:text-brand-400 hover:underline">{sensor.id}</Link>
+                      <Link to={`/sensors/${sensor.id}`} className="font-black font-mono hover:text-brand-600 hover:underline">{sensor.id}</Link>
                     </div>
-                    <p className="text-slate-400 mb-2">{typeCfg.label}</p>
-                    <div className="space-y-1">
+                    <p className="text-slate-500 font-bold mb-3">{typeCfg.label}</p>
+                    <div className="space-y-2 pt-2 border-t border-slate-100 font-medium">
                       <div className="flex justify-between">
                         <span className="text-slate-500">Reading</span>
-                        <span className="font-mono font-bold" style={{ color: cfg.color }}>
-                          {sensor.currentValue.toFixed(2)} {sensor.unit}
+                        <span className="font-mono font-black text-sm" style={{ color: cfg.color }}>
+                          {sensor.currentValue.toFixed(2)} <span className="text-[10px] text-slate-400 font-sans">{sensor.unit}</span>
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-500">Battery</span>
-                        <span className="font-mono">{sensor.batteryLevel.toFixed(0)}%</span>
+                        <span className="font-mono font-bold text-slate-700">{sensor.batteryLevel.toFixed(0)}%</span>
                       </div>
                     </div>
-                    <div className="mt-3">
+                    <div className="mt-4 pt-3 border-t border-slate-100">
                       <CommBadge status={sensor.communicationStatus} />
                     </div>
                   </div>
@@ -241,29 +241,29 @@ export default function LiveMap() {
                 }}
               >
                 <Popup className="custom-popup">
-                  <div className="bg-surface-800 text-white p-3 rounded-lg min-w-56 text-xs shadow-2xl border border-surface-600">
-                    <div className="flex items-center gap-2 mb-2">
+                  <div className="bg-white text-slate-900 p-4 rounded-xl min-w-56 text-xs shadow-xl border border-slate-200">
+                    <div className="flex items-center gap-3 mb-2">
                       <span className="text-lg">🖥️</span>
-                      <Link to={`/master-stations/${master.id}`} className="font-bold font-mono text-base hover:text-brand-400 hover:underline">{master.id}</Link>
+                      <Link to={`/master-stations/${master.id}`} className="font-black font-mono text-base hover:text-brand-600 hover:underline">{master.id}</Link>
                     </div>
-                    <p className="text-slate-300 text-[11px] mb-3">{master.name}</p>
-                    <div className="space-y-1">
+                    <p className="text-slate-500 font-bold text-[11px] mb-3">{master.name}</p>
+                    <div className="space-y-2 pt-2 border-t border-slate-100 font-medium">
                       <div className="flex justify-between">
                         <span className="text-slate-500">Substations</span>
-                        <span className="font-mono">{master.substationIds.length}</span>
+                        <span className="font-mono font-bold text-slate-700">{master.substationIds.length}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-500">Sensors</span>
-                        <span className="font-mono">{master.totalSensors}</span>
+                        <span className="font-mono font-bold text-slate-700">{master.totalSensors}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-500">Risk Score</span>
-                        <span className="font-mono font-bold" style={{ color: mCfg.color }}>
-                          {master.aggregatedRiskScore}/100
+                      <div className="flex justify-between mt-1">
+                        <span className="text-slate-500 font-bold">Risk Score</span>
+                        <span className="font-mono font-black text-sm" style={{ color: mCfg.color }}>
+                          {master.aggregatedRiskScore}<span className="text-xs text-slate-400">/100</span>
                         </span>
                       </div>
                     </div>
-                    <div className="mt-3">
+                    <div className="mt-4 pt-3 border-t border-slate-100">
                       <CommBadge status={master.communicationStatus} />
                     </div>
                   </div>
@@ -278,38 +278,38 @@ export default function LiveMap() {
       </div>
 
       {/* Map Legend */}
-      <div className="flex flex-wrap gap-4 text-xs text-slate-500 shrink-0 bg-surface-900 p-3 rounded-xl border border-surface-700">
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-green-500" />
+      <div className="flex flex-wrap gap-5 text-[11px] font-bold text-slate-500 shrink-0 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm uppercase tracking-widest">
+        <div className="flex items-center gap-2">
+          <div className="w-3.5 h-3.5 rounded-full shadow-sm bg-green-500" />
           Normal
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-blue-500" />
+        <div className="flex items-center gap-2">
+          <div className="w-3.5 h-3.5 rounded-full shadow-sm bg-blue-500" />
           Watch
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-yellow-500" />
+        <div className="flex items-center gap-2">
+          <div className="w-3.5 h-3.5 rounded-full shadow-sm bg-yellow-500" />
           Warning
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-orange-500" />
+        <div className="flex items-center gap-2">
+          <div className="w-3.5 h-3.5 rounded-full shadow-sm bg-orange-500" />
           High Risk
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-red-500" />
+        <div className="flex items-center gap-2">
+          <div className="w-3.5 h-3.5 rounded-full shadow-sm bg-red-500" />
           Critical
         </div>
-        <div className="w-px h-4 bg-surface-600 mx-2" />
-        <div className="flex items-center gap-1.5">
-          <div className="w-4 h-4 rounded-full bg-blue-500 border-[3px] border-white" />
-          Master Station
+        <div className="w-px h-5 bg-slate-200 mx-2" />
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded-full bg-brand-500 border-[3px] border-white shadow-sm" />
+          Master
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-cyan-500 border-2 border-white" />
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-cyan-500 border-2 border-white shadow-sm" />
           Substation
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-purple-500" />
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 rounded-full bg-purple-500 shadow-sm" />
           Sensor
         </div>
       </div>

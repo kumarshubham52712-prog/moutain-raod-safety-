@@ -16,27 +16,27 @@
   --color-brand-800: #075985;
   --color-brand-900: #0c4a6e;
 
-  /* Dark background palette */
-  --color-surface-950: #050b18;
-  --color-surface-900: #080f1e;
-  --color-surface-800: #0d1630;
-  --color-surface-750: #111d3b;
-  --color-surface-700: #162248;
-  --color-surface-600: #1e2d5e;
-  --color-surface-500: #253672;
+  /* Light background palette (was dark) */
+  --color-surface-950: #f8fafc; /* Base off-white background */
+  --color-surface-900: #f1f5f9; /* Secondary light gray */
+  --color-surface-800: #ffffff; /* Card background (clean white) */
+  --color-surface-750: #e2e8f0; /* Subtle borders */
+  --color-surface-700: #e2e8f0; /* Standard borders */
+  --color-surface-600: #cbd5e1; /* Hover borders */
+  --color-surface-500: #94a3b8; /* Muted text/icons */
 
-  /* Risk level colors */
-  --color-risk-normal:   #22c55e;
-  --color-risk-watch:    #3b82f6;
-  --color-risk-warning:  #eab308;
-  --color-risk-high:     #f97316;
-  --color-risk-critical: #ef4444;
+  /* Risk level colors - Pastel & Soft */
+  --color-risk-normal:   #86efac; /* Soft sage green */
+  --color-risk-watch:    #93c5fd; /* Soft dusty blue */
+  --color-risk-warning:  #fde047; /* Soft warm yellow */
+  --color-risk-high:     #fdba74; /* Soft muted orange */
+  --color-risk-critical: #fca5a5; /* Soft coral/red */
 
-  /* Sensor type colors */
-  --color-sensor-ipi:         #8b5cf6;
-  --color-sensor-vwp:         #06b6d4;
-  --color-sensor-geophone:    #f59e0b;
-  --color-sensor-extensometer:#ec4899;
+  /* Sensor type colors - Softened */
+  --color-sensor-ipi:         #c4b5fd;
+  --color-sensor-vwp:         #67e8f9;
+  --color-sensor-geophone:    #fcd34d;
+  --color-sensor-extensometer:#f9a8d4;
 
   /* Typography */
   --font-sans: 'Inter', system-ui, sans-serif;
@@ -49,14 +49,14 @@
   --animate-shimmer:    shimmer 2s linear infinite;
   --animate-glow:       glow 2s ease-in-out infinite alternate;
 
-  /* Box shadows */
-  --shadow-glow-green:  0 0 20px rgba(34, 197, 94, 0.3);
-  --shadow-glow-yellow: 0 0 20px rgba(234, 179, 8, 0.3);
-  --shadow-glow-orange: 0 0 20px rgba(249, 115, 22, 0.3);
-  --shadow-glow-red:    0 0 20px rgba(239, 68, 68, 0.4);
-  --shadow-glow-blue:   0 0 20px rgba(59, 130, 246, 0.3);
-  --shadow-card:        0 1px 3px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.4);
-  --shadow-card-hover:  0 4px 16px rgba(0,0,0,0.6), 0 2px 4px rgba(0,0,0,0.4);
+  /* Box shadows - Soft & Light */
+  --shadow-glow-green:  0 0 15px rgba(134, 239, 172, 0.4);
+  --shadow-glow-yellow: 0 0 15px rgba(253, 224, 71, 0.4);
+  --shadow-glow-orange: 0 0 15px rgba(253, 186, 116, 0.4);
+  --shadow-glow-red:    0 0 15px rgba(252, 165, 165, 0.4);
+  --shadow-glow-blue:   0 0 15px rgba(147, 197, 253, 0.4);
+  --shadow-card:        0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-card-hover:  0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
 }
 
 @keyframes flow {
@@ -90,8 +90,8 @@ html {
 }
 
 body {
-  background: #050b18;
-  color: #e2e8f0;
+  background: var(--color-surface-950);
+  color: #334155; /* slate-700 */
   min-height: 100vh;
   overflow: hidden;
 }
@@ -112,43 +112,46 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.2);
 }
 
-/* ── Leaflet Map Dark Mode ───────────────────────────────────── */
+/* ── Leaflet Map Light Mode ───────────────────────────────────── */
 
 .leaflet-container {
-  background: #0d1630 !important;
+  background: var(--color-surface-950) !important;
   font-family: 'Inter', sans-serif !important;
 }
 
+/* Remove dark invert for satellite map */
 .map-tiles-dark {
-  filter: brightness(0.7) contrast(1.2) saturate(0.8) hue-rotate(180deg) invert(1);
+  filter: none;
 }
 
 .leaflet-popup-content-wrapper {
-  background: transparent !important;
-  box-shadow: none !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid #e2e8f0 !important;
   border-radius: 12px !important;
   padding: 0 !important;
 }
 
 .leaflet-popup-content {
   margin: 0 !important;
+  color: #334155 !important;
 }
 
 .leaflet-popup-tip {
-  background: #0d1630 !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
 }
 
 .leaflet-popup-close-button {
-  color: #94a3b8 !important;
+  color: #64748b !important;
   font-size: 16px !important;
   top: 8px !important;
   right: 8px !important;
@@ -160,24 +163,24 @@ body {
 }
 
 .leaflet-control-zoom a {
-  background: #0d1630 !important;
-  color: #94a3b8 !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  background: #ffffff !important;
+  color: #64748b !important;
+  border-color: #e2e8f0 !important;
 }
 
 .leaflet-control-zoom a:hover {
-  background: #162248 !important;
-  color: #e2e8f0 !important;
+  background: #f1f5f9 !important;
+  color: #334155 !important;
 }
 
 .leaflet-control-attribution {
-  background: rgba(5, 11, 24, 0.8) !important;
-  color: #475569 !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: #64748b !important;
   font-size: 9px !important;
 }
 
 .leaflet-control-attribution a {
-  color: #64748b !important;
+  color: #3b82f6 !important;
 }
 
 /* ── Recharts Overrides ──────────────────────────────────────── */
