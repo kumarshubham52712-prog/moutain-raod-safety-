@@ -311,7 +311,7 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
           else if (targetValue >= cfg.normalMax * 0.8)    riskLevel = 'WATCH';
         }
         
-        const newHistory = [...s.history, { timestamp: ts, value: targetValue }].slice(-50);
+        const newHistory = [...s.history, { timestamp: ts, value: targetValue, unit: s.unit }].slice(-50);
         
         return { 
           ...s, 
