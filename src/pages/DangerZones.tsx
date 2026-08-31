@@ -8,7 +8,7 @@ import clsx from 'clsx';
 import { Link } from 'react-router-dom';
 
 export default function DangerZones() {
-  const { dangerZones, masterStations, clearDangerZoneHistory } = useMonitoringStore();
+  const { dangerZones, dangerZoneHistory, masterStations, substations, sensors, clearDangerZoneHistory } = useMonitoringStore();
   const [selectedMaster, setSelectedMaster] = useState<string>('ALL');
 
   // Filter out NORMAL zones — only show WATCH or above
@@ -21,11 +21,68 @@ export default function DangerZones() {
   // Sort by risk descending
   const sortedZones = [...filteredZones].sort((a, b) => b.riskScore - a.riskScore);
 
+  const handleDownloadJSON = () => {
+    // 1. Get only the affected Substations (riskScore > 30 represents danger/warning/critical)
+    const affectedSubstations = substations.filter(sub => sub.riskScore > 30);
+    
+    // 2. Format the data according to the exact requirement
+    const exportData = {
+      export_type: "danger_zones_substations",
+      exported_at: new Date().toISOString(),
+      total_danger_substations: affectedSubstations.length,
+      danger_zones: affectedSubstations.map(sub => {
+        // Find sensors for this substation
+        const subSensors = sensors.filter(s => s.substationId === sub.id);
+        
+        // Build the sensor readings object dynamically based on sensor types
+        const sensorReadings = subSensors.reduce((acc, sensor) => {
+          const typeKey = sensor.type.toLowerCase();
+          acc[typeKey] = {
+            value: sensor.currentValue,
+            unit: sensor.unit
+          };
+          return acc;
+        }, {} as Record<string, any>);
+
+        return {
+          substation_id: sub.id,
+          master_station_id: sub.masterStationId,
+          latitude: sub.latitude,
+          longitude: sub.longitude,
+          risk_score: sub.riskScore,
+          status: sub.riskLevel,
+          affected_sensors: sub.sensorIds,
+          sensor_readings: sensorReadings,
+          signal: sub.loraSignal,
+          battery: sub.batteryLevel,
+          connectivity: sub.communicationStatus,
+          timestamp: sub.lastSync
+        };
+      })
+    };
+
+    // 3. Trigger download
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    
+    // Format timestamp for filename: YYYY-MM-DD-HH-mm-ss
+    const now = new Date();
+    const dateStr = now.toISOString().replace(/T/, '-').replace(/:/g, '-').split('.')[0];
+    
+    link.download = `danger-zones-${dateStr}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       <SectionHeader
-        title="Active Danger Zones"
-        subtitle="Geographic areas with elevated risk profiles"
+        title="Current Danger Zones"
+        subtitle="Live derived geographic areas with elevated risk profiles"
       >
         <select
           value={selectedMaster}
@@ -39,6 +96,13 @@ export default function DangerZones() {
         </select>
 
         <button
+          onClick={handleDownloadJSON}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-brand-50 border border-brand-200 text-brand-600 text-xs font-semibold hover:bg-brand-100 transition-colors shadow-sm"
+        >
+          Download JSON
+        </button>
+
+        <button
           onClick={clearDangerZoneHistory}
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs font-semibold hover:bg-red-100 transition-colors shadow-sm"
         >
@@ -49,8 +113,8 @@ export default function DangerZones() {
       {sortedZones.length === 0 && (
         <div className="text-center py-20 text-slate-400">
           <ShieldAlert size={56} className="mx-auto mb-4 opacity-30 text-slate-300" />
-          <p className="text-xl font-bold text-slate-500">No Active Danger Zones</p>
-          <p className="text-sm mt-1">All monitoring zones are within normal parameters.</p>
+          <p className="text-xl font-bold text-slate-500">No Current Danger Zones</p>
+          <p className="text-sm mt-1">All monitored substations are within normal parameters.</p>
         </div>
       )}
 
@@ -135,6 +199,34 @@ export default function DangerZones() {
           );
         })}
       </div>
+
+      {dangerZoneHistory && dangerZoneHistory.length > 0 && (
+        <div className="mt-12 pt-8 border-t border-slate-200">
+          <SectionHeader
+            title="Danger Zone History"
+            subtitle="Recent historical instances of danger zones"
+          />
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-75">
+            {dangerZoneHistory.map((zone, idx) => {
+              const cfg = getRiskLevelConfig(zone.riskLevel);
+              return (
+                <Card key={`${zone.id}-${idx}`} className="p-5 bg-slate-50">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h4 className="font-bold text-slate-700">{zone.name}</h4>
+                      <p className="text-xs text-slate-500 mt-1">{format(new Date(zone.timeDetected), 'MMM dd, HH:mm:ss')}</p>
+                    </div>
+                    <StatusBadge level={zone.riskLevel} />
+                  </div>
+                  <div className="text-sm text-slate-600 mt-2">
+                    Peak Score: <span className="font-bold">{zone.riskScore}</span> / 100
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

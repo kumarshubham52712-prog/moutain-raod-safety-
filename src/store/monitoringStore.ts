@@ -18,6 +18,7 @@ interface MonitoringState {
   substations:    Substation[];
   masterStations: MasterStation[];
   dangerZones:    DangerZone[];
+  dangerZoneHistory: DangerZone[];
   alerts:         Alert[];
   eventLog:       EventLog[];
   simulation:     SimulationState & { scenarioTick: number; isDemoMode: boolean };
@@ -98,7 +99,8 @@ function propagateChanges(
   substations: Substation[],
   masterStations: MasterStation[],
   dangerZones: DangerZone[],
-): { substations: Substation[]; masterStations: MasterStation[]; dangerZones: DangerZone[] } {
+  dangerZoneHistory: DangerZone[]
+): { substations: Substation[]; masterStations: MasterStation[]; dangerZones: DangerZone[]; dangerZoneHistory: DangerZone[] } {
   const sensorMap = new Map(sensors.map(s => [s.id, s]));
   const ts = new Date().toISOString();
 
@@ -132,21 +134,40 @@ function propagateChanges(
     };
   });
 
-  const updatedZones = dangerZones.map(zone => {
-    const zoneSensors = sensors.filter(s => zone.triggeringSensorIds.includes(s.id));
-    if (zoneSensors.length === 0) return { ...zone, lastUpdated: ts };
-    const riskScore = calculateZoneRiskScore(zoneSensors);
-    return {
-      ...zone,
-      riskScore,
-      riskLevel: getRiskLevelFromScore(riskScore),
-      abnormalSensorCount: zoneSensors.filter(s => s.isAbnormal).length,
-      lastUpdated: ts,
-      status: getRiskLevelFromScore(riskScore) === 'NORMAL' ? 'MONITORING' as const : 'ACTIVE' as const,
-    };
+  const updatedZones: DangerZone[] = updatedSubs
+    .filter(sub => sub.riskScore > 30)
+    .map(sub => {
+      const existingZone = dangerZones.find(z => z.id === `DZ-${sub.id}`);
+      return {
+        id: `DZ-${sub.id}`,
+        name: `${sub.name} Danger Zone`,
+        description: `Active danger zone monitoring affected substation ${sub.id}`,
+        masterStationId: sub.masterStationId,
+        latitude: sub.latitude,
+        longitude: sub.longitude,
+        radius: 600,
+        riskScore: sub.riskScore,
+        riskLevel: sub.riskLevel,
+        status: 'ACTIVE',
+        triggeringSensorIds: sub.sensorIds,
+        abnormalSensorCount: sub.sensorIds.filter(id => sensorMap.get(id)?.isAbnormal).length,
+        timeDetected: existingZone ? existingZone.timeDetected : ts,
+        lastUpdated: ts,
+        recommendedAction: 'Inspect affected substation immediately',
+        evacuationRadius: 600,
+      };
+    });
+
+  const updatedHistory = [...dangerZoneHistory];
+  updatedZones.forEach(z => {
+    // Only push to history if this is a NEW danger zone activation
+    const wasActive = dangerZones.some(oldZ => oldZ.id === z.id);
+    if (!wasActive) {
+      updatedHistory.unshift({ ...z, status: 'RESOLVED' }); // Record as historical event
+    }
   });
 
-  return { substations: updatedSubs, masterStations: updatedMasters, dangerZones: updatedZones };
+  return { substations: updatedSubs, masterStations: updatedMasters, dangerZones: updatedZones, dangerZoneHistory: updatedHistory };
 }
 
 // ── Store ─────────────────────────────────────────────────────
@@ -166,6 +187,7 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
     substations,
     masterStations,
     dangerZones,
+    dangerZoneHistory: [],
     alerts,
     eventLog:  [],
     envState,
@@ -254,11 +276,12 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
         envState: getEnvState(),
       });
       // Do a silent propagation to reset everything
-      const propagated = propagateChanges(initialSensors, dataAdapter.getSubstations(), dataAdapter.getMasterStations(), dataAdapter.getDangerZones());
+      const propagated = propagateChanges(initialSensors, dataAdapter.getSubstations(), dataAdapter.getMasterStations(), dataAdapter.getDangerZones(), []);
       set({
         substations: propagated.substations,
         masterStations: propagated.masterStations,
         dangerZones: propagated.dangerZones,
+        dangerZoneHistory: propagated.dangerZoneHistory,
         alerts: dataAdapter.getAlerts(),
         systemStatus: computeSystemStatus(initialSensors, propagated.substations, propagated.masterStations, dataAdapter.getAlerts()),
       });
@@ -333,13 +356,14 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
         severity: 'INFO',
       };
 
-      const propagated = propagateChanges(sensors, state.substations, state.masterStations, state.dangerZones);
+      const propagated = propagateChanges(sensors, state.substations, state.masterStations, state.dangerZones, state.dangerZoneHistory);
 
       set({
         sensors,
         substations: propagated.substations,
         masterStations: propagated.masterStations,
         dangerZones: propagated.dangerZones,
+        dangerZoneHistory: propagated.dangerZoneHistory,
         systemStatus: computeSystemStatus(sensors, propagated.substations, propagated.masterStations, state.alerts),
         eventLog: [event, ...state.eventLog].slice(0, 300)
       });
@@ -366,11 +390,13 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
           communicationStatus: value > 20 ? 'ONLINE' as const : value > 10 ? 'DEGRADED' as const : 'OFFLINE' as const,
         } : s
       );
-      const propagated = propagateChanges(sensors, state.substations, state.masterStations, state.dangerZones);
+      const propagated = propagateChanges(sensors, state.substations, state.masterStations, state.dangerZones, state.dangerZoneHistory);
       set({
         sensors,
         substations: propagated.substations,
         masterStations: propagated.masterStations,
+        dangerZones: propagated.dangerZones,
+        dangerZoneHistory: propagated.dangerZoneHistory,
         systemStatus: computeSystemStatus(sensors, propagated.substations, propagated.masterStations, state.alerts),
       });
     },
@@ -384,7 +410,7 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
           signalStrength: online ? Math.max(s.signalStrength, 50) : 0,
         } : s
       );
-      const propagated = propagateChanges(sensors, state.substations, state.masterStations, state.dangerZones);
+      const propagated = propagateChanges(sensors, state.substations, state.masterStations, state.dangerZones, state.dangerZoneHistory);
       const event: EventLog = {
         id: genEventId(),
         timestamp: new Date().toISOString(),
@@ -397,6 +423,8 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
         sensors,
         substations: propagated.substations,
         masterStations: propagated.masterStations,
+        dangerZones: propagated.dangerZones,
+        dangerZoneHistory: propagated.dangerZoneHistory,
         eventLog: [event, ...state.eventLog].slice(0, 300),
         systemStatus: computeSystemStatus(sensors, propagated.substations, propagated.masterStations, state.alerts),
       });
@@ -420,7 +448,7 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
           signalStrength: online ? Math.max(s.signalStrength, 50) : 0,
         };
       });
-      const propagated = propagateChanges(sensors, substations, state.masterStations, state.dangerZones);
+      const propagated = propagateChanges(sensors, substations, state.masterStations, state.dangerZones, state.dangerZoneHistory);
       const event: EventLog = {
         id: genEventId(),
         timestamp: new Date().toISOString(),
@@ -434,6 +462,7 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
         substations,
         masterStations: propagated.masterStations,
         dangerZones: propagated.dangerZones,
+        dangerZoneHistory: propagated.dangerZoneHistory,
         eventLog: [event, ...state.eventLog].slice(0, 300),
         systemStatus: computeSystemStatus(sensors, substations, propagated.masterStations, state.alerts),
       });
@@ -481,16 +510,7 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
       set({ alerts: [] });
     },
     clearDangerZoneHistory: () => {
-      set(state => ({
-        dangerZones: state.dangerZones.map(dz => ({
-          ...dz,
-          riskScore: 0,
-          riskLevel: 'NORMAL' as const,
-          status: 'RESOLVED' as const,
-          abnormalSensorCount: 0,
-          triggeringSensorIds: [],
-        })),
-      }));
+      set({ dangerZoneHistory: [] });
     },
 
     // ── User-Driven Simulation (PLAY button) ─────────────────
@@ -503,7 +523,7 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
       events.push({ id: genEventId(), timestamp: ts(), eventType: 'SENSOR_READING' as EventType, source: 'SYSTEM', message: '▶ Stage 1: Sensor readings locked in — processing prepared values', severity: 'INFO' });
 
       // Stage 2: Substation risk computation
-      const propagated = propagateChanges(state.sensors, state.substations, state.masterStations, state.dangerZones);
+      const propagated = propagateChanges(state.sensors, state.substations, state.masterStations, state.dangerZones, state.dangerZoneHistory);
       events.push({ id: genEventId(), timestamp: ts(), eventType: 'SUBSTATION_PACKET' as EventType, source: 'SYSTEM', message: '▶ Stage 2: Substation risk scores recomputed from sensor data', severity: 'INFO' });
 
       // Stage 3: LoRa packet transmission
@@ -549,6 +569,7 @@ export const useMonitoringStore = create<MonitoringState>((set, get) => {
         substations: propagated.substations,
         masterStations: propagated.masterStations,
         dangerZones: propagated.dangerZones,
+        dangerZoneHistory: propagated.dangerZoneHistory,
         alerts: updatedAlerts,
         eventLog: [...events.reverse(), ...state.eventLog].slice(0, 500),
         systemStatus,
