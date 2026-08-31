@@ -26,7 +26,7 @@ export function StatusBadge({ level, showDot = true, size = 'sm' }: StatusBadgeP
   
   return (
     <span
-      className={clsx('inline-flex items-center gap-1.5 font-semibold rounded-full border', sizes[size])}
+      className={clsx('inline-flex items-center gap-1.5 font-semibold rounded-md border', sizes[size])}
       style={{ background: cfg.bgColor, borderColor: cfg.borderColor, color: textColors[level] ?? cfg.textColor }}
     >
       {showDot && (
@@ -50,7 +50,7 @@ export function CommBadge({ status }: CommBadgeProps) {
   };
   const c = cfg[status] ?? cfg.UNKNOWN;
   return (
-    <span className={clsx('inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border', c.bg, c.border, c.text)}>
+    <span className={clsx('inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-md border', c.bg, c.border, c.text)}>
       <span className={clsx('w-1.5 h-1.5 rounded-full', c.dot)} />
       {status}
     </span>
@@ -79,8 +79,8 @@ export function KPICard({
   return (
     <div
       className={clsx(
-        'relative overflow-hidden rounded-xl border p-5 transition-all duration-300 hover:-translate-y-1',
-        cfg ? '' : 'bg-white border-surface-750 hover:shadow-md',
+        'relative overflow-hidden rounded-md border p-5 transition-colors duration-200',
+        cfg ? '' : 'bg-white border-slate-200 hover:border-slate-300 shadow-sm',
         className,
       )}
       style={cfg ? {
@@ -92,13 +92,13 @@ export function KPICard({
         <div className="flex items-start justify-between mb-3">
           <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">{title}</p>
           {icon && (
-            <div className="p-1.5 rounded-lg" style={{ background: (cfg?.bgColor ?? 'rgba(14,165,233,0.1)') }}>
+            <div className="p-1.5 rounded-md" style={{ background: (cfg?.bgColor ?? 'rgba(14,165,233,0.1)') }}>
               <span style={{ color: cfg?.color ?? color ?? '#0ea5e9' }}>{icon}</span>
             </div>
           )}
         </div>
         <p
-          className="text-3xl font-black mb-1"
+          className="text-3xl font-bold mb-1"
           style={{ color: cfg ? '#111827' : '#0f172a' }} /* slate-900 */
         >
           {value}
@@ -128,7 +128,7 @@ export function SectionHeader({ title, subtitle, children }: { title: string; su
 
 export function Card({ children, className, style }: { children: ReactNode; className?: string; style?: React.CSSProperties }) {
   return (
-    <div className={clsx('bg-white border border-surface-750 shadow-sm rounded-xl', className)} style={style}>
+    <div className={clsx('bg-white border border-slate-200 shadow-sm rounded-md', className)} style={style}>
       {children}
     </div>
   );

@@ -73,7 +73,7 @@ export default function DataImport() {
 
         <div
           onClick={() => fileRef.current?.click()}
-          className="border-2 border-dashed border-surface-600 rounded-xl p-8 text-center cursor-pointer hover:border-brand-600/50 hover:bg-brand-600/5 transition-all"
+          className="border-2 border-dashed border-slate-300 rounded-md p-8 text-center cursor-pointer hover:border-brand-600/50 hover:bg-brand-600/5 transition-all"
         >
           <Upload size={40} className="mx-auto text-slate-600 mb-3" />
           <p className="text-sm font-semibold text-slate-300 mb-1">
@@ -92,13 +92,13 @@ export default function DataImport() {
         </div>
 
         {error && (
-          <div className="mt-4 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm flex items-center gap-2">
+          <div className="mt-4 px-4 py-3 rounded-md bg-red-50 border border-red-200 text-red-600 text-sm flex items-center gap-2 shadow-sm">
             <XCircle size={16} /> {error}
           </div>
         )}
 
         {imported && (
-          <div className="mt-4 px-4 py-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 text-sm flex items-center gap-2">
+          <div className="mt-4 px-4 py-3 rounded-md bg-green-50 border border-green-200 text-green-700 text-sm flex items-center gap-2 shadow-sm">
             <CheckCircle size={16} /> Data imported successfully! Dashboard has been updated.
           </div>
         )}
@@ -110,10 +110,10 @@ export default function DataImport() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <FileJson size={14} className="text-yellow-400" />
-              <p className="text-xs font-semibold text-white">JSON Format</p>
+              <FileJson size={14} className="text-brand-500" />
+              <p className="text-xs font-semibold text-slate-900">JSON Format</p>
             </div>
-            <pre className="bg-surface-950 border border-surface-700 rounded-lg p-3 text-[10px] text-slate-400 font-mono overflow-x-auto">
+            <pre className="bg-slate-50 border border-slate-200 rounded-md p-3 text-[10px] text-slate-600 font-mono overflow-x-auto shadow-inner">
 {`[
   {
     "sensor_id": "IPI-001",
@@ -131,10 +131,10 @@ export default function DataImport() {
           </div>
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <FileSpreadsheet size={14} className="text-green-400" />
-              <p className="text-xs font-semibold text-white">CSV Format</p>
+              <FileSpreadsheet size={14} className="text-green-500" />
+              <p className="text-xs font-semibold text-slate-900">CSV Format</p>
             </div>
-            <pre className="bg-surface-950 border border-surface-700 rounded-lg p-3 text-[10px] text-slate-400 font-mono overflow-x-auto">
+            <pre className="bg-slate-50 border border-slate-200 rounded-md p-3 text-[10px] text-slate-600 font-mono overflow-x-auto shadow-inner">
 {`sensor_id,sensor_type,substation_id,master_station_id,timestamp,value,unit,battery,signal
 IPI-001,IPI,SUB-01,MASTER-01,2026-08-29T18:30:00Z,12.4,mm,87,91
 VWP-002,VWP,SUB-02,MASTER-01,2026-08-29T18:30:00Z,64.5,kPa,78,71`}
@@ -142,10 +142,10 @@ VWP-002,VWP,SUB-02,MASTER-01,2026-08-29T18:30:00Z,64.5,kPa,78,71`}
           </div>
         </div>
 
-        <div className="mt-4 px-3 py-2 bg-surface-900 rounded-lg border border-surface-700 text-xs text-slate-500">
-          <p className="font-semibold text-slate-400 mb-1">Required fields:</p>
+        <div className="mt-4 px-3 py-2 bg-slate-50 rounded-md border border-slate-200 text-xs text-slate-500 shadow-sm">
+          <p className="font-semibold text-slate-700 mb-1">Required fields:</p>
           <p>sensor_id, sensor_type (IPI | VWP | GEOPHONE | EXTENSOMETER), substation_id, timestamp, value</p>
-          <p className="mt-1"><span className="text-slate-400">Optional:</span> master_station_id, unit, battery, signal, latitude, longitude</p>
+          <p className="mt-1"><span className="text-slate-500">Optional:</span> master_station_id, unit, battery, signal, latitude, longitude</p>
         </div>
       </Card>
 
@@ -155,16 +155,16 @@ VWP-002,VWP,SUB-02,MASTER-01,2026-08-29T18:30:00Z,64.5,kPa,78,71`}
           <SectionHeader title="Validation Results" subtitle="Review before importing" />
 
           <div className="grid grid-cols-3 gap-3 mb-4">
-            <div className="text-center p-3 bg-surface-900 rounded-lg border border-surface-700">
-              <p className="text-xl font-bold text-white font-mono">{result.totalRecords}</p>
+            <div className="text-center p-3 bg-slate-50 rounded-md border border-slate-200 shadow-sm">
+              <p className="text-xl font-bold text-slate-900 font-mono">{result.totalRecords}</p>
               <p className="text-[10px] text-slate-500">Total Records</p>
             </div>
-            <div className="text-center p-3 bg-green-500/5 rounded-lg border border-green-500/20">
-              <p className="text-xl font-bold text-green-400 font-mono">{result.validRecords}</p>
+            <div className="text-center p-3 bg-green-50 rounded-md border border-green-200 shadow-sm">
+              <p className="text-xl font-bold text-green-700 font-mono">{result.validRecords}</p>
               <p className="text-[10px] text-slate-500">Valid</p>
             </div>
-            <div className="text-center p-3 bg-red-500/5 rounded-lg border border-red-500/20">
-              <p className="text-xl font-bold text-red-400 font-mono">{result.invalidRecords}</p>
+            <div className="text-center p-3 bg-red-50 rounded-md border border-red-200 shadow-sm">
+              <p className="text-xl font-bold text-red-600 font-mono">{result.invalidRecords}</p>
               <p className="text-[10px] text-slate-500">Invalid</p>
             </div>
           </div>
@@ -172,10 +172,10 @@ VWP-002,VWP,SUB-02,MASTER-01,2026-08-29T18:30:00Z,64.5,kPa,78,71`}
           {/* Errors */}
           {result.errors.length > 0 && (
             <div className="mb-4">
-              <p className="text-xs font-semibold text-red-400 mb-2">Validation Errors:</p>
-              <div className="max-h-32 overflow-y-auto bg-red-500/5 border border-red-500/20 rounded-lg p-2">
+              <p className="text-xs font-semibold text-red-600 mb-2">Validation Errors:</p>
+              <div className="max-h-32 overflow-y-auto bg-red-50 border border-red-200 rounded-md p-2 shadow-inner">
                 {result.errors.map((err, i) => (
-                  <p key={i} className="text-[10px] text-red-300 font-mono py-0.5">{err}</p>
+                  <p key={i} className="text-[10px] text-red-600 font-mono py-0.5">{err}</p>
                 ))}
               </div>
             </div>
@@ -190,7 +190,7 @@ VWP-002,VWP,SUB-02,MASTER-01,2026-08-29T18:30:00Z,64.5,kPa,78,71`}
               <div className="overflow-x-auto">
                 <table className="w-full text-[10px]">
                   <thead>
-                    <tr className="border-b border-surface-700">
+                    <tr className="border-b border-slate-200">
                       {['sensor_id', 'type', 'substation', 'timestamp', 'value', 'unit', 'battery', 'signal'].map(h => (
                         <th key={h} className="text-left py-1.5 px-2 text-slate-500 font-medium">{h}</th>
                       ))}
@@ -198,9 +198,9 @@ VWP-002,VWP,SUB-02,MASTER-01,2026-08-29T18:30:00Z,64.5,kPa,78,71`}
                   </thead>
                   <tbody>
                     {result.preview.map((rec, i) => (
-                      <tr key={i} className="border-b border-surface-800">
-                        <td className="py-1.5 px-2 font-mono text-white">{rec.sensor_id}</td>
-                        <td className="py-1.5 px-2 text-slate-300">{rec.sensor_type}</td>
+                      <tr key={i} className="border-b border-slate-100 last:border-0">
+                        <td className="py-1.5 px-2 font-mono text-slate-900">{rec.sensor_id}</td>
+                        <td className="py-1.5 px-2 text-slate-700">{rec.sensor_type}</td>
                         <td className="py-1.5 px-2 text-slate-400">{rec.substation_id}</td>
                         <td className="py-1.5 px-2 font-mono text-slate-500">{rec.timestamp}</td>
                         <td className="py-1.5 px-2 font-mono font-bold text-brand-400">{rec.value}</td>
@@ -219,7 +219,7 @@ VWP-002,VWP,SUB-02,MASTER-01,2026-08-29T18:30:00Z,64.5,kPa,78,71`}
           {result.validRecords > 0 && !imported && (
             <button
               onClick={handleImport}
-              className="mt-4 w-full py-3 rounded-lg text-sm font-bold bg-brand-600 text-white hover:bg-brand-500 transition-all"
+              className="mt-4 w-full py-3 rounded-md text-sm font-bold bg-brand-600 text-white hover:bg-brand-500 transition-colors shadow-sm"
             >
               Import {result.validRecords} Valid Records
             </button>

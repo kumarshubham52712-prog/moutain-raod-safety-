@@ -48,10 +48,10 @@ export default function LiveSimulation() {
       <Card className="flex items-center justify-between p-4 shrink-0 shadow-sm border-slate-200 bg-white/90 backdrop-blur">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-brand-50 rounded-lg border border-brand-100">
+            <div className="p-2 bg-brand-50 rounded-md border border-brand-100">
               <Activity className="text-brand-600" size={24} />
             </div>
-            <h1 className="font-black text-2xl tracking-tight text-slate-900">LIVE SIMULATION</h1>
+            <h1 className="font-bold text-2xl tracking-tight text-slate-900">LIVE SIMULATION</h1>
           </div>
           
           <div className="h-10 w-px bg-slate-200" />
@@ -60,7 +60,7 @@ export default function LiveSimulation() {
             <button
               onClick={simulation.isRunning ? pauseSimulation : startSimulation}
               className={clsx(
-                'flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all',
+                'flex items-center gap-2 px-5 py-2.5 rounded-md font-bold text-sm transition-colors',
                 simulation.isRunning 
                   ? 'bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 shadow-sm'
                   : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 shadow-sm'
@@ -68,17 +68,17 @@ export default function LiveSimulation() {
             >
               {simulation.isRunning ? <><Pause size={16} /> PAUSE</> : <><Play size={16} /> PLAY</>}
             </button>
-            <button onClick={resetSimulation} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600 transition-colors shadow-sm" title="Reset Simulation">
+            <button onClick={resetSimulation} className="p-2.5 rounded-md bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600 transition-colors shadow-sm" title="Reset Simulation">
               <RotateCcw size={16} />
             </button>
             
-            <div className="flex bg-slate-100 rounded-xl p-1 ml-3 border border-slate-200">
+            <div className="flex bg-slate-100 rounded-md p-1 ml-3 border border-slate-200">
               {[1, 2, 4].map(s => (
                 <button
                   key={s}
                   onClick={() => setSimSpeed(s)}
                   className={clsx(
-                    'px-4 py-1.5 rounded-lg text-sm font-bold transition-all',
+                    'px-4 py-1.5 rounded-md text-sm font-bold transition-colors',
                     simulation.speed === s ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
                   )}
                 >
@@ -104,7 +104,7 @@ export default function LiveSimulation() {
             {masterStations.map(master => (
               <div key={master.id} className="text-sm">
                 <div 
-                  className={clsx('flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors', selected.id === master.id ? 'bg-brand-100 text-brand-700 shadow-sm' : 'hover:bg-slate-200 text-slate-700')}
+                  className={clsx('flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors', selected.id === master.id ? 'bg-brand-100 text-brand-700 shadow-sm' : 'hover:bg-slate-200 text-slate-700')}
                   onClick={() => { toggleMaster(master.id); setSelected({ type: 'master', id: master.id }); }}
                 >
                   {expandedMasters[master.id] ? <ChevronDown size={16} className="opacity-50" /> : <ChevronRight size={16} className="opacity-50" />}
@@ -117,7 +117,7 @@ export default function LiveSimulation() {
                     {substations.filter(s => s.masterStationId === master.id).map(sub => (
                       <div key={sub.id}>
                         <div 
-                          className={clsx('flex items-center gap-2 p-2 rounded-lg cursor-pointer text-xs transition-colors', selected.id === sub.id ? 'bg-cyan-100 text-cyan-700 shadow-sm' : 'hover:bg-slate-200 text-slate-600')}
+                          className={clsx('flex items-center gap-2 p-2 rounded-md cursor-pointer text-xs transition-colors', selected.id === sub.id ? 'bg-cyan-100 text-cyan-700 shadow-sm' : 'hover:bg-slate-200 text-slate-600')}
                           onClick={() => { toggleSub(sub.id); setSelected({ type: 'substation', id: sub.id }); }}
                         >
                           {expandedSubs[sub.id] ? <ChevronDown size={14} className="opacity-50" /> : <ChevronRight size={14} className="opacity-50" />}
@@ -155,7 +155,7 @@ export default function LiveSimulation() {
           <div className="p-5 border-b border-slate-200 bg-white flex items-center gap-3">
             {getBreadcrumbs().map((bc, i, arr) => (
               <div key={bc} className="flex items-center gap-3">
-                <span className={clsx('font-mono font-black', i === arr.length - 1 ? 'text-slate-900 text-xl' : 'text-slate-400 text-sm')}>
+                <span className={clsx('font-mono font-bold', i === arr.length - 1 ? 'text-slate-900 text-xl' : 'text-slate-400 text-sm')}>
                   {bc}
                 </span>
                 {i < arr.length - 1 && <ChevronRight size={16} className="text-slate-300" />}
@@ -182,14 +182,14 @@ export default function LiveSimulation() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     
                     {/* LEFT: Sensor Diagram */}
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                    <div className="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden flex flex-col">
                       <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                         <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{cfg.label} DIAGRAM</span>
                         <StatusBadge level={currentSensor.riskLevel} size="xs" />
                       </div>
                       <div className="flex-1 relative bg-white p-4">
                         {sensorImage ? (
-                          <img src={sensorImage} alt={`${cfg.label} diagram`} className="w-full h-full object-contain rounded-xl" />
+                          <img src={sensorImage} alt={`${cfg.label} diagram`} className="w-full h-full object-contain rounded-md" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-slate-400 font-medium">No Image Available</div>
                         )}
@@ -198,22 +198,22 @@ export default function LiveSimulation() {
 
                     {/* RIGHT: Serial Monitor & Controls */}
                     <div className="space-y-6">
-                      <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+                      <div className="bg-white p-8 rounded-md border border-slate-200 shadow-sm">
                         <div className="text-center mb-8">
-                          <h2 className="text-5xl font-black font-mono tracking-tight" style={{ color: rCfg.color }}>
+                          <h2 className="text-5xl font-bold font-mono tracking-tight" style={{ color: rCfg.color }}>
                             {currentSensor.currentValue.toFixed(3)} <span className="text-2xl font-bold text-slate-500">{cfg.unit}</span>
                           </h2>
                           <p className="text-xs font-bold text-slate-400 mt-2 uppercase tracking-widest">Current Reading</p>
                         </div>
 
                         {/* Manual Target Override Slider */}
-                        <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-inner">
+                        <div className="bg-slate-50 p-6 rounded-md border border-slate-200 shadow-sm">
                           <div className="flex justify-between items-end mb-5">
                             <div>
                               <h3 className="text-xs font-bold text-slate-500 mb-1 tracking-widest uppercase">INTERPOLATION TARGET</h3>
                             </div>
                             <div className="text-right">
-                              <span className="font-mono text-brand-600 font-black text-xl">
+                              <span className="font-mono text-brand-600 font-bold text-xl">
                                 {(currentSensor.targetValue ?? currentSensor.currentValue).toFixed(3)}
                               </span>
                             </div>
@@ -226,7 +226,7 @@ export default function LiveSimulation() {
                             step={cfg.criticalThreshold * 0.01}
                             value={currentSensor.targetValue ?? currentSensor.currentValue}
                             onChange={(e) => setSensorTargetValue(currentSensor.id, parseFloat(e.target.value))}
-                            className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-600"
+                            className="w-full h-3 bg-slate-200 rounded-md appearance-none cursor-pointer accent-brand-600"
                           />
 
                           <div className="flex justify-between text-[10px] font-mono font-bold text-slate-400 mt-3">
@@ -237,9 +237,9 @@ export default function LiveSimulation() {
                           </div>
 
                           <div className="flex gap-3 mt-8">
-                            <button onClick={() => setSensorTargetValue(currentSensor.id, (currentSensor.targetValue ?? currentSensor.currentValue) - cfg.criticalThreshold*0.1)} className="flex-1 py-3 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl font-black text-2xl text-slate-700 shadow-sm transition-colors">-</button>
-                            <button onClick={() => setSensorTargetValue(currentSensor.id, (currentSensor.targetValue ?? currentSensor.currentValue) + cfg.criticalThreshold*0.1)} className="flex-1 py-3 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl font-black text-2xl text-slate-700 shadow-sm transition-colors">+</button>
-                            <button onClick={() => setSensorTargetValue(currentSensor.id, cfg.normalMax * 0.5)} className="flex-1 py-3 bg-brand-50 text-brand-700 hover:bg-brand-100 rounded-xl font-bold text-xs uppercase tracking-widest border border-brand-200 shadow-sm transition-colors">Reset</button>
+                            <button onClick={() => setSensorTargetValue(currentSensor.id, (currentSensor.targetValue ?? currentSensor.currentValue) - cfg.criticalThreshold*0.1)} className="flex-1 py-3 bg-white border border-slate-200 hover:bg-slate-100 rounded-md font-bold text-2xl text-slate-700 shadow-sm transition-colors">-</button>
+                            <button onClick={() => setSensorTargetValue(currentSensor.id, (currentSensor.targetValue ?? currentSensor.currentValue) + cfg.criticalThreshold*0.1)} className="flex-1 py-3 bg-white border border-slate-200 hover:bg-slate-100 rounded-md font-bold text-2xl text-slate-700 shadow-sm transition-colors">+</button>
+                            <button onClick={() => setSensorTargetValue(currentSensor.id, cfg.normalMax * 0.5)} className="flex-1 py-3 bg-brand-50 text-brand-700 hover:bg-brand-100 rounded-md font-bold text-xs uppercase tracking-widest border border-brand-200 shadow-sm transition-colors">Reset</button>
                           </div>
                         </div>
 
@@ -256,9 +256,9 @@ export default function LiveSimulation() {
             {/* ── SUBSTATION VIEW ── */}
             {selected.type === 'substation' && currentSub && (
               <div className="space-y-8 animate-in fade-in duration-200 max-w-5xl mx-auto">
-                <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div className="flex justify-between items-center bg-white p-6 rounded-md border border-slate-200 shadow-sm">
                   <div>
-                    <h2 className="text-3xl font-black text-slate-900 mb-1">Substation {currentSub.id}</h2>
+                    <h2 className="text-3xl font-bold text-slate-900 mb-1">Substation {currentSub.id}</h2>
                     <p className="text-slate-500 text-sm font-medium">Edge Processing Node</p>
                   </div>
                   <div className="flex gap-4">
@@ -272,14 +272,14 @@ export default function LiveSimulation() {
                     const cfg = getSensorTypeConfig(sensor.type);
                     const rCfg = getRiskLevelConfig(sensor.riskLevel);
                     return (
-                      <div key={sensor.id} className="bg-white p-5 rounded-2xl border border-slate-200 hover:shadow-md transition-shadow cursor-pointer group relative overflow-hidden" onClick={() => setSelected({ type: 'sensor', id: sensor.id })}>
-                        {sensor.riskLevel === 'CRITICAL' && <div className="absolute inset-0 border-2 border-red-500/20 rounded-2xl animate-pulse pointer-events-none" />}
+                      <div key={sensor.id} className="bg-white p-5 rounded-md border border-slate-200 hover:shadow-md transition-shadow cursor-pointer group relative overflow-hidden" onClick={() => setSelected({ type: 'sensor', id: sensor.id })}>
+                        {sensor.riskLevel === 'CRITICAL' && <div className="absolute inset-0 border-2 border-red-500/20 rounded-md animate-pulse pointer-events-none" />}
                         <div className="flex justify-between items-start mb-3 relative z-10">
-                          <span className="font-mono font-black text-sm text-slate-900 group-hover:text-brand-600 transition-colors">{sensor.id}</span>
+                          <span className="font-mono font-bold text-sm text-slate-900 group-hover:text-brand-600 transition-colors">{sensor.id}</span>
                           <StatusBadge level={sensor.riskLevel} size="xs" />
                         </div>
                         <p className="text-xs font-bold text-slate-500 mb-4 relative z-10">{cfg.label}</p>
-                        <p className="text-2xl font-black font-mono relative z-10" style={{ color: rCfg.color }}>
+                        <p className="text-2xl font-bold font-mono relative z-10" style={{ color: rCfg.color }}>
                           {sensor.currentValue.toFixed(3)} <span className="text-xs font-bold text-slate-400">{cfg.unit}</span>
                         </p>
                       </div>
@@ -292,9 +292,9 @@ export default function LiveSimulation() {
             {/* ── MASTER VIEW ── */}
             {selected.type === 'master' && currentMaster && (
               <div className="space-y-8 animate-in fade-in duration-200 max-w-5xl mx-auto">
-                <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div className="flex justify-between items-center bg-white p-6 rounded-md border border-slate-200 shadow-sm">
                   <div>
-                    <h2 className="text-3xl font-black text-slate-900 mb-1">{currentMaster.id}</h2>
+                    <h2 className="text-3xl font-bold text-slate-900 mb-1">{currentMaster.id}</h2>
                     <p className="text-slate-500 text-sm font-medium">{currentMaster.name}</p>
                   </div>
                   <div className="flex gap-4">
@@ -304,16 +304,16 @@ export default function LiveSimulation() {
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                   {substations.filter(s => s.masterStationId === currentMaster.id).map(sub => (
-                    <div key={sub.id} className="bg-white p-5 rounded-2xl border border-slate-200 hover:shadow-md transition-shadow cursor-pointer group" onClick={() => setSelected({ type: 'substation', id: sub.id })}>
+                    <div key={sub.id} className="bg-white p-5 rounded-md border border-slate-200 hover:shadow-md transition-shadow cursor-pointer group" onClick={() => setSelected({ type: 'substation', id: sub.id })}>
                       <div className="flex justify-between items-center mb-4">
-                        <span className="font-mono font-black text-base text-slate-900 group-hover:text-brand-600 transition-colors">{sub.id}</span>
+                        <span className="font-mono font-bold text-base text-slate-900 group-hover:text-brand-600 transition-colors">{sub.id}</span>
                         <StatusBadge level={sub.riskLevel} size="xs" />
                       </div>
                       <div className="flex justify-between text-xs font-bold text-slate-500 mb-2">
                         <span className="uppercase tracking-widest">Risk Score</span>
                         <span className="font-mono text-slate-700">{sub.riskScore}/100</span>
                       </div>
-                      <div className="h-2 w-full bg-slate-100 rounded-full mt-2 overflow-hidden">
+                      <div className="h-2 w-full bg-slate-100 rounded-sm mt-2 overflow-hidden">
                         <div className="h-full transition-all" style={{ width: `${sub.riskScore}%`, backgroundColor: getRiskLevelConfig(sub.riskLevel).color }} />
                       </div>
                     </div>
@@ -333,12 +333,12 @@ export default function LiveSimulation() {
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
               <FastForward size={16} /> Simulation Status
             </h3>
-            <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-inner mb-3">
+            <div className="flex justify-between items-center bg-slate-50 p-4 rounded-md border border-slate-200 shadow-sm mb-3">
               <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Scenario Tick</span>
-              <span className="font-mono text-xl font-black text-brand-600">T+{simulation.scenarioTick}</span>
+              <span className="font-mono text-xl font-bold text-brand-600">T+{simulation.scenarioTick}</span>
             </div>
             {simulation.isDemoMode && (
-              <div className="text-[10px] text-center font-bold text-brand-700 bg-brand-50 py-2 rounded-lg border border-brand-200 shadow-sm">
+              <div className="text-[10px] text-center font-bold text-brand-700 bg-brand-50 py-2 rounded-md border border-brand-200 shadow-sm">
                 AUTOMATIC DEMONSTRATION ACTIVE
               </div>
             )}

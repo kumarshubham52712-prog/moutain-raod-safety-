@@ -19,7 +19,7 @@ export default function Overview() {
   return (
     <div className="space-y-8">
       {/* Simulation Banner */}
-      <div className="bg-white border border-surface-750 rounded-xl p-5 flex items-center justify-between shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-md p-5 flex items-center justify-between shadow-sm">
         <div>
           <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
             <Clock size={16} className="text-brand-600" />
@@ -28,12 +28,12 @@ export default function Overview() {
           <p className="text-xs text-slate-500 mt-1 font-medium">Data updated {format(new Date(systemStatus.lastUpdated), 'HH:mm:ss')}</p>
         </div>
         <div className="flex gap-3">
-          <Link to="/simulation" className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-bold text-slate-700 transition-colors border border-slate-200">
+          <Link to="/simulation" className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-md text-xs font-bold text-slate-700 transition-colors border border-slate-200">
             Open Simulation Controls
           </Link>
           <button
             onClick={simulation.isRunning ? pauseSimulation : startSimulation}
-            className={`px-4 py-2.5 rounded-lg text-xs font-bold transition-colors border ${
+            className={`px-4 py-2.5 rounded-md text-xs font-bold transition-colors border ${
               simulation.isRunning
                 ? 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100'
                 : 'bg-brand-50 text-brand-700 border-brand-200 hover:bg-brand-100'
@@ -94,12 +94,12 @@ export default function Overview() {
                     <Link
                       key={sub.id}
                       to={`/substations/${sub.id}`}
-                      className="block bg-white border border-surface-750 rounded-xl p-5 hover:shadow-md transition-all group relative overflow-hidden"
+                      className="block bg-white border border-slate-200 rounded-md p-5 hover:shadow-md transition-all group relative overflow-hidden"
                       style={sub.riskLevel === 'CRITICAL' ? { borderColor: `${sCfg.color}80` } : {}}
                     >
                       {/* Flashing critical border overlay */}
                       {sub.riskLevel === 'CRITICAL' && (
-                        <div className="absolute inset-0 border-2 border-red-500/20 rounded-xl animate-pulse-slow pointer-events-none" />
+                        <div className="absolute inset-0 border-2 border-red-500/20 rounded-md animate-pulse-slow pointer-events-none" />
                       )}
                       
                       <div className="flex justify-between items-start mb-4">
@@ -113,7 +113,7 @@ export default function Overview() {
                         <RiskGauge score={sub.riskScore} size={40} />
                       </div>
                       
-                      <div className="flex items-center gap-4 text-xs font-medium text-slate-500 mt-5 pt-3 border-t border-surface-750">
+                      <div className="flex items-center gap-4 text-xs font-medium text-slate-500 mt-5 pt-3 border-t border-slate-200">
                         <span className="flex items-center gap-1"><Wifi size={12}/> {sub.masterStationId}</span>
                         <span className="flex items-center gap-1"><Activity size={12}/> {sub.sensorIds.length} Sensors</span>
                       </div>
@@ -133,10 +133,10 @@ export default function Overview() {
             {masterStations.map(master => {
             const mCfg = getRiskLevelConfig(master.riskLevel);
             return (
-              <div key={master.id} className="bg-white border border-surface-750 rounded-xl p-6 hover:shadow-md transition-shadow mb-5">
+              <div key={master.id} className="bg-white border border-slate-200 rounded-md p-6 hover:shadow-md transition-shadow mb-5">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 mb-5">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center border shrink-0"
+                    <div className="w-12 h-12 rounded-md flex items-center justify-center border shrink-0"
                          style={{ borderColor: mCfg.borderColor, background: mCfg.bgColor }}>
                       <Server size={24} style={{ color: mCfg.color }} />
                     </div>
@@ -154,7 +154,7 @@ export default function Overview() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-6 shrink-0 bg-slate-50 px-5 py-3 rounded-xl border border-slate-200">
+                  <div className="flex items-center gap-6 shrink-0 bg-slate-50 px-5 py-3 rounded-md border border-slate-200">
                     <div className="text-center">
                       <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Substations</p>
                       <p className="font-mono font-bold text-lg text-slate-900">{master.substationIds.length}</p>
@@ -188,19 +188,19 @@ export default function Overview() {
         {/* Right Col: Event Stream & Alerts */}
         <div className="space-y-8">
           {/* Active Alerts Summary */}
-          <div className="bg-white border border-surface-750 rounded-xl p-6 shadow-sm">
+          <div className="bg-white border border-slate-200 rounded-md p-6 shadow-sm">
             <SectionHeader title="Active Threats" />
             <div className="flex items-center gap-4">
-              <div className="flex-1 bg-red-50 border border-red-200 rounded-xl p-4 text-center">
-                <p className="text-4xl font-black text-red-600 mb-1">{systemStatus.criticalAlerts}</p>
+              <div className="flex-1 bg-red-50 border border-red-200 rounded-md p-4 text-center">
+                <p className="text-4xl font-bold text-red-600 mb-1">{systemStatus.criticalAlerts}</p>
                 <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest">Critical</p>
               </div>
-              <div className="flex-1 bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
-                <p className="text-4xl font-black text-yellow-600 mb-1">{systemStatus.activeWarnings}</p>
+              <div className="flex-1 bg-yellow-50 border border-yellow-200 rounded-md p-4 text-center">
+                <p className="text-4xl font-bold text-yellow-600 mb-1">{systemStatus.activeWarnings}</p>
                 <p className="text-[10px] text-yellow-600 font-bold uppercase tracking-widest">Warnings</p>
               </div>
             </div>
-            <Link to="/alerts" className="block w-full text-center py-3 mt-5 text-sm font-bold text-slate-700 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors border border-slate-200">
+            <Link to="/alerts" className="block w-full text-center py-3 mt-5 text-sm font-bold text-slate-700 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-md transition-colors border border-slate-200">
               View Alert Center →
             </Link>
           </div>

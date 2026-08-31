@@ -184,6 +184,10 @@ export interface Alert {
   masterStationId?: string;
   dangerZoneId?: string;
   location: string;
+  latitude?: number;
+  longitude?: number;
+  currentValue?: number;
+  unit?: string;
 
   // State
   acknowledged: boolean;

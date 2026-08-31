@@ -87,7 +87,7 @@ export default function DangerZones() {
         <select
           value={selectedMaster}
           onChange={(e) => setSelectedMaster(e.target.value)}
-          className="px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm font-medium text-slate-700 focus:border-brand-500 focus:outline-none shadow-sm"
+          className="px-3 py-2 rounded-md bg-white border border-slate-200 text-sm font-medium text-slate-700 focus:border-brand-500 focus:outline-none shadow-sm"
         >
           <option value="ALL">All Master Stations</option>
           {masterStations.map(m => (
@@ -97,14 +97,14 @@ export default function DangerZones() {
 
         <button
           onClick={handleDownloadJSON}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-brand-50 border border-brand-200 text-brand-600 text-xs font-semibold hover:bg-brand-100 transition-colors shadow-sm"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-md bg-brand-50 border border-brand-200 text-brand-600 text-xs font-semibold hover:bg-brand-100 transition-colors shadow-sm"
         >
           Download JSON
         </button>
 
         <button
           onClick={clearDangerZoneHistory}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs font-semibold hover:bg-red-100 transition-colors shadow-sm"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-md bg-red-50 border border-red-200 text-red-600 text-xs font-semibold hover:bg-red-100 transition-colors shadow-sm"
         >
           <Trash2 size={12} /> Clear History
         </button>
@@ -139,19 +139,19 @@ export default function DangerZones() {
                 <div className="flex items-center gap-3">
                   <div
                     className={clsx(
-                      'w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border shadow-sm',
+                      'w-12 h-12 rounded-md flex items-center justify-center shrink-0 border shadow-sm',
                       isCritical ? 'bg-red-50 text-red-600 border-red-200' : 'bg-slate-50 text-slate-500 border-slate-200'
                     )}
                   >
                     {isCritical ? <ShieldAlert size={24} /> : <AlertTriangle size={24} />}
                   </div>
                   <div>
-                    <h3 className="text-lg font-black text-slate-900 leading-tight mb-1">{zone.id}</h3>
+                    <h3 className="text-lg font-bold text-slate-900 leading-tight mb-1">{zone.id}</h3>
                     <StatusBadge level={zone.riskLevel} size="xs" />
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-3xl font-black font-mono leading-none" style={{ color: cfg.color }}>
+                  <p className="text-3xl font-bold font-mono leading-none" style={{ color: cfg.color }}>
                     {zone.riskScore}
                   </p>
                   <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Risk Score</p>
@@ -161,7 +161,7 @@ export default function DangerZones() {
               <p className="text-sm font-bold text-slate-700 mb-1">{zone.name}</p>
               <p className="text-xs font-medium text-slate-500 mb-5 h-10 line-clamp-2">{zone.description}</p>
 
-              <div className="space-y-2.5 mb-5 bg-slate-50 p-4 rounded-xl border border-slate-100 shadow-inner">
+              <div className="space-y-2.5 mb-5 bg-slate-50 p-4 rounded-md border border-slate-100 shadow-sm">
                 <div className="flex justify-between text-xs">
                   <span className="text-slate-500 font-medium flex items-center gap-1.5"><Layers size={12} /> Master Station</span>
                   <Link to={`/master-stations/${zone.masterStationId}`} className="font-mono font-bold text-brand-600 hover:underline">

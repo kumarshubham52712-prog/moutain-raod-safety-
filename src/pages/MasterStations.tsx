@@ -26,18 +26,18 @@ export default function MasterStations() {
 
           return (
             <Link key={master.id} to={`/master-stations/${master.id}`} className="group">
-              <Card className="p-6 hover:border-slate-500 transition-all hover:scale-[1.003]">
+              <Card className="p-6 hover:border-slate-300 transition-colors">
                 <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
                   <div className="flex items-center gap-4">
                     <div
-                      className="w-16 h-16 rounded-xl flex items-center justify-center border-2 shrink-0"
+                      className="w-16 h-16 rounded-md flex items-center justify-center border shrink-0"
                       style={{ borderColor: rCfg.color, background: rCfg.bgColor }}
                     >
                       <Server size={28} style={{ color: rCfg.color }} />
                     </div>
                     <div>
                       <div className="flex items-center gap-3 mb-1">
-                        <h2 className="text-lg font-bold font-mono text-white">{master.id}</h2>
+                        <h2 className="text-lg font-bold font-mono text-slate-900">{master.id}</h2>
                         <StatusBadge level={master.riskLevel} />
                         <CommBadge status={master.communicationStatus} />
                       </div>
@@ -74,7 +74,7 @@ export default function MasterStations() {
                     return (
                       <div
                         key={sub.id}
-                        className="flex-1 h-2 rounded-full transition-all"
+                        className="flex-1 h-2 rounded-sm transition-all"
                         style={{ background: sCfg.color, opacity: sub.communicationStatus === 'OFFLINE' ? 0.2 : 0.8 }}
                         title={`${sub.id}: ${sub.riskLevel} (Risk: ${sub.riskScore})`}
                       />

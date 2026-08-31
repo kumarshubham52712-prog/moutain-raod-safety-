@@ -24,7 +24,7 @@ const NavSection = ({ title, items }: { title: string; items: NavItem[] }) => (
         to={item.path}
         end={item.path === '/'}
         className={({ isActive }) => clsx(
-          'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 group mb-0.5',
+          'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 group mb-0.5',
           isActive
             ? 'bg-brand-50 text-brand-600 border border-brand-100 shadow-sm'
             : 'text-slate-600 hover:text-slate-900 hover:bg-surface-800 hover:shadow-sm',
@@ -72,18 +72,18 @@ export function Sidebar() {
     <aside className="flex flex-col w-64 shrink-0 bg-white border-r border-slate-200 h-screen sticky top-0 overflow-y-auto shadow-sm">
       {/* Logo */}
       <div className="flex items-center gap-3 px-6 py-6 border-b border-slate-100">
-        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 shadow-md">
+        <div className="flex items-center justify-center w-10 h-10 rounded-md bg-gradient-to-br from-brand-500 to-brand-600 shadow-sm">
           <Mountain size={20} className="text-white" />
         </div>
         <div>
-          <p className="text-base font-black text-slate-900 tracking-tight">MountainWatch</p>
+          <p className="text-base font-bold text-slate-900 tracking-tight">MountainWatch</p>
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Uttarakhand</p>
         </div>
       </div>
 
       {/* Overall Risk Pill */}
       <div
-        className="mx-4 mt-4 mb-2 px-3 py-2.5 rounded-xl border-2 text-xs font-bold flex items-center gap-2 shadow-sm"
+        className="mx-4 mt-4 mb-2 px-3 py-2.5 rounded-md border text-xs font-bold flex items-center gap-2 shadow-sm"
         style={{ background: riskCfg.bgColor || 'white', borderColor: riskCfg.borderColor, color: riskCfg.color }}
       >
         <span className="w-2.5 h-2.5 rounded-full animate-pulse-slow shadow-sm" style={{ background: riskCfg.color }} />
@@ -93,7 +93,7 @@ export function Sidebar() {
 
       {/* Sim indicator */}
       {simulation.isRunning && (
-        <div className="mx-4 mb-3 px-3 py-2 rounded-xl bg-green-50 border-2 border-green-200 text-green-700 text-[10px] font-bold flex items-center gap-2 shadow-sm uppercase tracking-widest">
+        <div className="mx-4 mb-3 px-3 py-2 rounded-md bg-green-50 border border-green-200 text-green-700 text-[10px] font-bold flex items-center gap-2 shadow-sm uppercase tracking-widest">
           <span className="w-2 h-2 rounded-full bg-green-500 animate-ping shadow-sm" />
           Sim: Tick #{simulation.tick}
         </div>

@@ -127,48 +127,43 @@ function getSensorRiskLevel(val: number, cfg: typeof SENSOR_TYPE_CONFIGS['IPI'])
   return 'NORMAL';
 }
 
-function updateSensorValue(sensor: Sensor, envState: EnvState): number {
+function updateSensorValue(sensor: Sensor, envState: EnvState, activeScenario: string): number {
   const cfg  = SENSOR_TYPE_CONFIGS[sensor.type];
   let   val  = sensor.currentValue;
 
-  // If there's a target value (from scenario or manual override), smoothly interpolate towards it
   if (sensor.targetValue !== undefined) {
-    const diff = sensor.targetValue - val;
-    // Move 10% towards target per tick, plus tiny noise
-    val += diff * 0.1 + noise(cfg.normalMax * 0.01);
-    
-    // If very close, just snap to it to stop micro-fluctuations
-    if (Math.abs(diff) < cfg.normalMax * 0.01) {
-      val = sensor.targetValue;
-      // Optionally clear target if reached? We'll leave it so noise stays around the target.
-    }
+    // Snap to target immediately if in manual mode to prevent confusing drift
+    val = sensor.targetValue;
   } else {
-    // Standard environmental physics
-    switch (sensor.type) {
-      case 'VWP': {
-        const saturationEffect = (envState.groundSaturation / 100) * cfg.criticalThreshold * 0.8;
-        const target = cfg.normalMax * 0.4 + saturationEffect;
-        val = val + (target - val) * 0.08 + noise(cfg.normalMax * 0.03);
-        break;
-      }
-      case 'IPI': {
-        const pressureEffect = (envState.groundSaturation / 100) * cfg.criticalThreshold * 0.6;
-        const target = cfg.normalMax * 0.2 + pressureEffect;
-        val = val + (target - val) * 0.05 + noise(cfg.normalMax * 0.04);
-        break;
-      }
-      case 'GEOPHONE': {
-        const movementEffect = (envState.groundSaturation / 100) * cfg.criticalThreshold * 0.5;
-        const randomEvent    = Math.random() < 0.05 ? cfg.warningThreshold * 0.4 * Math.random() : 0;
-        const target = cfg.normalMax * 0.1 + movementEffect;
-        val = val + (target - val) * 0.1 + noise(cfg.normalMax * 0.05) + randomEvent;
-        break;
-      }
-      case 'EXTENSOMETER': {
-        const displacementEffect = (envState.groundSaturation / 100) * cfg.criticalThreshold * 0.5;
-        const target = cfg.normalMax * 0.15 + displacementEffect;
-        val = val + (target - val) * 0.04 + noise(cfg.normalMax * 0.02);
-        break;
+    // Only apply physics/drift if we are in an active simulation scenario
+    if (activeScenario !== 'NORMAL') {
+      // Standard environmental physics
+      switch (sensor.type) {
+        case 'VWP': {
+          const saturationEffect = (envState.groundSaturation / 100) * cfg.criticalThreshold * 0.8;
+          const target = cfg.normalMax * 0.4 + saturationEffect;
+          val = val + (target - val) * 0.08 + noise(cfg.normalMax * 0.03);
+          break;
+        }
+        case 'IPI': {
+          const pressureEffect = (envState.groundSaturation / 100) * cfg.criticalThreshold * 0.6;
+          const target = cfg.normalMax * 0.2 + pressureEffect;
+          val = val + (target - val) * 0.05 + noise(cfg.normalMax * 0.04);
+          break;
+        }
+        case 'GEOPHONE': {
+          const movementEffect = (envState.groundSaturation / 100) * cfg.criticalThreshold * 0.5;
+          const randomEvent    = Math.random() < 0.05 ? cfg.warningThreshold * 0.4 * Math.random() : 0;
+          const target = cfg.normalMax * 0.1 + movementEffect;
+          val = val + (target - val) * 0.1 + noise(cfg.normalMax * 0.05) + randomEvent;
+          break;
+        }
+        case 'EXTENSOMETER': {
+          const displacementEffect = (envState.groundSaturation / 100) * cfg.criticalThreshold * 0.5;
+          const target = cfg.normalMax * 0.15 + displacementEffect;
+          val = val + (target - val) * 0.04 + noise(cfg.normalMax * 0.02);
+          break;
+        }
       }
     }
   }
@@ -247,7 +242,7 @@ export function simulationTick(
 
     const cfg    = SENSOR_TYPE_CONFIGS[sensor.type];
     const oldRisk = sensor.riskLevel;
-    const newVal = updateSensorValue(sensor, env);
+    const newVal = updateSensorValue(sensor, env, activeScenario);
     const riskLevel = getSensorRiskLevel(newVal, cfg);
     const isAbnormal = newVal > cfg.warningThreshold;
 

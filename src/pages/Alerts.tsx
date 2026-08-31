@@ -57,7 +57,7 @@ export default function Alerts() {
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value as typeof filter)}
-            className="px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm font-medium text-slate-700 focus:outline-none focus:border-brand-500 transition-colors"
+            className="px-3 py-2 rounded-md bg-slate-50 border border-slate-200 text-sm font-medium text-slate-700 focus:outline-none focus:border-brand-500 transition-colors"
           >
             <option value="ACTIVE">Active Only</option>
             <option value="RESOLVED">Resolved Only</option>
@@ -67,7 +67,7 @@ export default function Alerts() {
           <select
             value={masterFilter}
             onChange={(e) => setMasterFilter(e.target.value)}
-            className="px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm font-medium text-slate-700 focus:outline-none focus:border-brand-500 transition-colors"
+            className="px-3 py-2 rounded-md bg-slate-50 border border-slate-200 text-sm font-medium text-slate-700 focus:outline-none focus:border-brand-500 transition-colors"
           >
             <option value="ALL">All Master Stations</option>
             {masterStations.map(m => <option key={m.id} value={m.id}>{m.id}</option>)}
@@ -76,7 +76,7 @@ export default function Alerts() {
           <select
             value={severityFilter}
             onChange={(e) => setSeverityFilter(e.target.value as typeof severityFilter)}
-            className="px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm font-medium text-slate-700 focus:outline-none focus:border-brand-500 transition-colors"
+            className="px-3 py-2 rounded-md bg-slate-50 border border-slate-200 text-sm font-medium text-slate-700 focus:outline-none focus:border-brand-500 transition-colors"
           >
             <option value="ALL">All Severities</option>
             <option value="CRITICAL">Critical</option>
@@ -90,7 +90,7 @@ export default function Alerts() {
 
           <button
             onClick={clearAlertHistory}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-50 border border-red-200 text-red-600 text-xs font-bold hover:bg-red-100 transition-colors shadow-sm"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-md bg-red-50 border border-red-200 text-red-600 text-xs font-bold hover:bg-red-100 transition-colors shadow-sm"
           >
             <Trash2 size={12} /> Clear History
           </button>
@@ -107,7 +107,7 @@ export default function Alerts() {
             <div
               key={alert.id}
               className={clsx(
-                'p-5 rounded-xl border transition-all flex flex-col md:flex-row gap-5 md:items-start relative overflow-hidden shadow-sm',
+                'p-5 rounded-md border transition-colors flex flex-col md:flex-row gap-5 md:items-start relative overflow-hidden shadow-sm',
                 isResolved
                   ? 'bg-slate-50 border-slate-200 opacity-60'
                   : getAlertColor(alert.severity)
@@ -124,7 +124,7 @@ export default function Alerts() {
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-4 mb-2">
-                  <h3 className={clsx('text-lg font-black', isResolved ? 'text-slate-500' : 'text-slate-900')}>
+                  <h3 className={clsx('text-lg font-bold', isResolved ? 'text-slate-500' : 'text-slate-900')}>
                     {alert.title}
                   </h3>
                   <span className="text-xs font-bold text-slate-500 whitespace-nowrap bg-white/50 px-2 py-1 rounded-md border border-slate-200/50">
@@ -136,21 +136,31 @@ export default function Alerts() {
                 
                 <div className="flex flex-wrap items-center gap-4 text-xs font-medium">
                   {alert.sensorId && (
-                    <span className="flex items-center gap-1 text-slate-500 bg-white/50 px-2 py-1 rounded border border-slate-200/50">
+                    <span className="flex items-center gap-1 text-slate-500 bg-white/50 px-2 py-1 rounded-md border border-slate-200/50">
                       Sensor: <Link to={`/sensors/${alert.sensorId}`} className="font-mono font-bold text-brand-600 hover:underline">{alert.sensorId}</Link>
                     </span>
                   )}
                   {alert.dangerZoneId && (
-                    <span className="flex items-center gap-1 text-slate-500 bg-white/50 px-2 py-1 rounded border border-slate-200/50">
+                    <span className="flex items-center gap-1 text-slate-500 bg-white/50 px-2 py-1 rounded-md border border-slate-200/50">
                       Zone: <span className="font-mono font-bold text-red-600">{alert.dangerZoneId}</span>
                     </span>
                   )}
-                  <span className="flex items-center gap-1 text-slate-500 bg-white/50 px-2 py-1 rounded border border-slate-200/50">
+                  <span className="flex items-center gap-1 text-slate-500 bg-white/50 px-2 py-1 rounded-md border border-slate-200/50">
                     Master: <Link to={`/master-stations/${alert.masterStationId}`} className="font-mono font-bold text-brand-600 hover:underline">{alert.masterStationId}</Link>
                   </span>
-                  <span className="flex items-center gap-1 text-slate-500 bg-white/50 px-2 py-1 rounded border border-slate-200/50">
+                  <span className="flex items-center gap-1 text-slate-500 bg-white/50 px-2 py-1 rounded-md border border-slate-200/50">
                     Location: <span className="font-bold text-slate-700">{alert.location}</span>
                   </span>
+                  {alert.latitude !== undefined && alert.longitude !== undefined && (
+                    <span className="flex items-center gap-1 text-slate-500 bg-white/50 px-2 py-1 rounded-md border border-slate-200/50">
+                      Coordinates: <span className="font-mono font-bold text-slate-700">{alert.latitude.toFixed(4)}, {alert.longitude.toFixed(4)}</span>
+                    </span>
+                  )}
+                  {alert.currentValue !== undefined && (
+                    <span className="flex items-center gap-1 text-slate-500 bg-white/50 px-2 py-1 rounded-md border border-slate-200/50">
+                      Value: <span className="font-mono font-bold text-slate-700">{alert.currentValue.toFixed(2)} {alert.unit}</span>
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -160,14 +170,14 @@ export default function Alerts() {
                   {!isAcked && (
                     <button
                       onClick={() => acknowledgeAlert(alert.id)}
-                      className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-xl transition-colors border border-slate-200 shadow-sm"
+                      className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold rounded-md transition-colors border border-slate-200 shadow-sm"
                     >
                       <Check size={14} /> Acknowledge
                     </button>
                   )}
                   <button
                     onClick={() => resolveAlert(alert.id)}
-                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-green-50 hover:bg-green-100 text-green-700 text-xs font-bold rounded-xl transition-colors border border-green-200 shadow-sm"
+                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-green-50 hover:bg-green-100 text-green-700 text-xs font-bold rounded-md transition-colors border border-green-200 shadow-sm"
                   >
                     <CheckCircle size={14} /> Resolve
                   </button>
@@ -178,9 +188,9 @@ export default function Alerts() {
         })}
 
         {filteredAlerts.length === 0 && (
-          <div className="text-center py-16 bg-white border border-slate-200 rounded-xl shadow-sm">
+          <div className="text-center py-16 bg-white border border-slate-200 rounded-md shadow-sm">
             <CheckCircle size={56} className="mx-auto text-green-500 mb-4 opacity-50" />
-            <h3 className="text-xl font-black text-slate-900 mb-1">All Clear</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-1">All Clear</h3>
             <p className="text-sm font-medium text-slate-500">No alerts match your current filters.</p>
           </div>
         )}

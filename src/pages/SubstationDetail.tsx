@@ -51,7 +51,7 @@ export default function SubstationDetail() {
         {/* BIG PLAY BUTTON */}
         <button
           onClick={playScenario}
-          className="flex items-center gap-2 px-6 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm rounded-xl shadow-md transition-all hover:-translate-y-0.5"
+          className="flex items-center gap-2 px-6 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm rounded-md shadow-sm transition-colors"
         >
           <Play size={16} />
           PROCESS SIMULATION TICK
@@ -62,20 +62,20 @@ export default function SubstationDetail() {
       <Card className="p-6 md:p-8 relative overflow-hidden">
         {/* Flashing border if critical */}
         {sub.riskLevel === 'CRITICAL' && (
-          <div className="absolute inset-0 border-2 border-red-500/20 rounded-xl animate-pulse-slow pointer-events-none" />
+          <div className="absolute inset-0 border-2 border-red-500/20 rounded-md animate-pulse-slow pointer-events-none" />
         )}
         
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 relative z-10">
           <div className="flex items-center gap-5">
             <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center border shrink-0 shadow-sm"
+              className="w-16 h-16 rounded-md flex items-center justify-center border shrink-0 shadow-sm"
               style={{ borderColor: rCfg.borderColor, background: rCfg.bgColor }}
             >
               <Wifi size={32} style={{ color: rCfg.color }} />
             </div>
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <h2 className="text-2xl font-black font-mono text-slate-900 tracking-tight">{sub.id}</h2>
+                <h2 className="text-2xl font-bold font-mono text-slate-900 tracking-tight">{sub.id}</h2>
                 <StatusBadge level={sub.riskLevel} />
                 <CommBadge status={sub.communicationStatus} />
               </div>
@@ -92,7 +92,7 @@ export default function SubstationDetail() {
             </div>
           </div>
           
-          <div className="flex items-center gap-8 bg-slate-50 p-5 rounded-2xl border border-slate-100 shadow-sm w-full lg:w-auto justify-center lg:justify-end">
+          <div className="flex items-center gap-8 bg-slate-50 p-5 rounded-md border border-slate-200 shadow-sm w-full lg:w-auto justify-center lg:justify-end">
             <div className="space-y-4 min-w-[140px]">
               <div className="flex justify-between items-center text-xs">
                 <span className="text-slate-500 font-bold tracking-widest uppercase">Signal</span>
@@ -138,13 +138,13 @@ export default function SubstationDetail() {
                 <Card key={sensor.id} className="p-6 flex flex-col gap-4 relative overflow-hidden group hover:shadow-md transition-shadow">
                   {/* Flashing border if critical */}
                   {sensor.riskLevel === 'CRITICAL' && (
-                    <div className="absolute inset-0 border-2 border-red-500/20 rounded-xl animate-pulse-slow pointer-events-none" />
+                    <div className="absolute inset-0 border-2 border-red-500/20 rounded-md animate-pulse-slow pointer-events-none" />
                   )}
                   
                   {/* Header */}
                   <div className="flex justify-between items-start relative z-10">
                     <div className="flex items-center gap-3">
-                      <div className="p-2.5 rounded-xl shadow-sm border border-slate-100" style={{ background: sRisk.bgColor }}>
+                      <div className="p-2.5 rounded-md shadow-sm border border-slate-100" style={{ background: sRisk.bgColor }}>
                         <IconComp size={20} style={{ color: sRisk.color }} />
                       </div>
                       <div>
@@ -159,14 +159,14 @@ export default function SubstationDetail() {
                   </div>
 
                   {/* Current Value Display */}
-                  <div className="text-center py-5 bg-slate-50 rounded-xl border border-slate-100 shadow-sm relative z-10 mt-2">
-                    <div className="text-4xl font-black font-mono tracking-tight transition-colors duration-300" style={{ color: sRisk.color }}>
+                  <div className="text-center py-5 bg-slate-50 rounded-md border border-slate-200 shadow-sm relative z-10 mt-2">
+                    <div className="text-4xl font-bold font-mono tracking-tight transition-colors duration-300" style={{ color: sRisk.color }}>
                       {sensor.currentValue.toFixed(2)} <span className="text-sm font-bold text-slate-500 ml-1">{typeCfg.unit}</span>
                     </div>
                   </div>
 
                   {/* Time Series Graph */}
-                  <div className="mt-4 relative z-10 bg-white p-3 rounded-xl border border-surface-750">
+                  <div className="mt-4 relative z-10 bg-white p-3 rounded-md border border-slate-200">
                     <TimeSeriesChart
                       readings={sensor.history}
                       color={typeCfg.color}
@@ -192,7 +192,7 @@ export default function SubstationDetail() {
                       step={typeCfg.criticalThreshold * 0.01}
                       value={targetVal}
                       onChange={(e) => setSensorTargetValue(sensor.id, parseFloat(e.target.value))}
-                      className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-600"
+                      className="w-full h-2 bg-slate-200 rounded-md appearance-none cursor-pointer accent-brand-600"
                     />
 
                     <div className="flex justify-between text-[10px] font-mono font-bold text-slate-400 mt-2">
@@ -205,8 +205,8 @@ export default function SubstationDetail() {
 
                   {/* +/- Adjusters */}
                   <div className="flex gap-2 mt-2 relative z-10">
-                    <button onClick={() => setSensorTargetValue(sensor.id, targetVal - typeCfg.criticalThreshold*0.05)} className="flex-1 py-2 bg-slate-50 hover:bg-slate-100 rounded-lg font-bold text-slate-600 border border-slate-200 transition-colors shadow-sm">-</button>
-                    <button onClick={() => setSensorTargetValue(sensor.id, targetVal + typeCfg.criticalThreshold*0.05)} className="flex-1 py-2 bg-slate-50 hover:bg-slate-100 rounded-lg font-bold text-slate-600 border border-slate-200 transition-colors shadow-sm">+</button>
+                    <button onClick={() => setSensorTargetValue(sensor.id, targetVal - typeCfg.criticalThreshold*0.05)} className="flex-1 py-2 bg-slate-50 hover:bg-slate-100 rounded-md font-bold text-slate-600 border border-slate-200 transition-colors shadow-sm">-</button>
+                    <button onClick={() => setSensorTargetValue(sensor.id, targetVal + typeCfg.criticalThreshold*0.05)} className="flex-1 py-2 bg-slate-50 hover:bg-slate-100 rounded-md font-bold text-slate-600 border border-slate-200 transition-colors shadow-sm">+</button>
                   </div>
                 </Card>
               );

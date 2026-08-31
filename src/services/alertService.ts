@@ -57,6 +57,10 @@ export function generateSensorAlert(sensor: Sensor): Alert | null {
     substationId:     sensor.substationId,
     masterStationId:  sensor.masterStationId,
     location:         `${sensor.substationId}`,
+    latitude:         sensor.latitude,
+    longitude:        sensor.longitude,
+    currentValue:     sensor.currentValue,
+    unit:             sensor.unit,
     acknowledged:     false,
     resolved:         false,
   };
@@ -92,6 +96,8 @@ export function generateZoneAlert(zone: DangerZone): Alert | null {
     dangerZoneId:    zone.id,
     masterStationId: zone.masterStationId,
     location:        zone.name,
+    latitude:        zone.latitude,
+    longitude:       zone.longitude,
     acknowledged:    false,
     resolved:        false,
   };
